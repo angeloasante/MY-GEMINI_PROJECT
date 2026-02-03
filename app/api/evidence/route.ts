@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
           id,
           mode,
           platform,
-          overall_threat_level,
+          threat_level,
           created_at
         )
       `)

@@ -39,13 +39,22 @@ export function getDeviceId(): string {
 export interface SaveAnalysisParams {
   user_id: string;
   mode: "relationship" | "scam" | "self_analysis";
+  input_type?: "screenshot" | "text" | "voice";
+  input_content?: string;
+  input_mime_type?: string;
   platform?: string;
   relationship_type?: string;
-  overall_threat_level?: "green" | "yellow" | "orange" | "red";
+  threat_level?: "green" | "yellow" | "orange" | "red";
   health_score?: number;
   tactics_count?: number;
-  raw_input?: string;
-  full_response?: object;
+  primary_tactic?: string;
+  extracted_data?: object;
+  classification_data?: object;
+  psychology_data?: object;
+  defense_data?: object;
+  guardian_response?: object;
+  voice_script?: string;
+  processing_time_ms?: number;
 }
 
 export async function saveAnalysisSession(params: SaveAnalysisParams) {
@@ -54,13 +63,22 @@ export async function saveAnalysisSession(params: SaveAnalysisParams) {
     .insert({
       user_id: params.user_id,
       mode: params.mode,
+      input_type: params.input_type || "screenshot",
+      input_content: params.input_content,
+      input_mime_type: params.input_mime_type,
       platform: params.platform,
       relationship_type: params.relationship_type,
-      overall_threat_level: params.overall_threat_level,
+      threat_level: params.threat_level,
       health_score: params.health_score,
       tactics_count: params.tactics_count,
-      raw_input: params.raw_input,
-      full_response: params.full_response,
+      primary_tactic: params.primary_tactic,
+      extracted_data: params.extracted_data,
+      classification_data: params.classification_data,
+      psychology_data: params.psychology_data,
+      defense_data: params.defense_data,
+      guardian_response: params.guardian_response,
+      voice_script: params.voice_script,
+      processing_time_ms: params.processing_time_ms,
     })
     .select()
     .single();
@@ -140,12 +158,18 @@ export async function getAnalysisHistory(userId: string, limit = 50, mode?: stri
     .select(`
       id,
       mode,
-      overall_threat_level,
+      threat_level,
       health_score,
       tactics_count,
       platform,
+      primary_tactic,
       created_at,
-      full_response
+      extracted_data,
+      classification_data,
+      psychology_data,
+      defense_data,
+      guardian_response,
+      voice_script
     `)
     .eq("user_id", userId)
     .order("created_at", { ascending: false })

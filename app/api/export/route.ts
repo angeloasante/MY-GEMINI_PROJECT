@@ -5,17 +5,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionDetails, supabaseAdmin } from "@/lib/supabase";
 import { AnalysisResult } from "@/types/agents";
 
+// Helper to reconstruct full_response from separate columns
+function reconstructFullResponse(session: any): AnalysisResult {
+  return {
+    extraction: session.extracted_data || {},
+    classification: session.classification_data || {},
+    psychology: session.psychology_data || {},
+    defenses: session.defense_data || {},
+    guardian: session.guardian_response || {},
+  } as AnalysisResult;
+}
+
 // Generate HTML content for PDF
 function generateExportHTML(session: {
   id: string;
   mode: string;
   platform: string;
   relationship_type: string;
-  overall_threat_level: string;
+  threat_level: string;
   health_score: number;
   tactics_count: number;
   created_at: string;
-  full_response: AnalysisResult;
+  extracted_data?: any;
+  classification_data?: any;
+  psychology_data?: any;
+  defense_data?: any;
+  guardian_response?: any;
   detected_tactics: Array<{
     tactic_name: string;
     severity: string;
@@ -23,7 +38,7 @@ function generateExportHTML(session: {
     evidence_quotes: string[];
   }>;
 }): string {
-  const result = session.full_response;
+  const result = reconstructFullResponse(session);
   const date = new Date(session.created_at).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -107,7 +122,7 @@ function generateExportHTML(session: {
       border-radius: 20px;
       font-weight: bold;
       color: white;
-      background-color: ${threatColors[session.overall_threat_level] || '#6b7280'};
+      background-color: ${threatColors[session.threat_level] || '#6b7280'};
     }
     h2 {
       color: #374151;
@@ -233,7 +248,7 @@ function generateExportHTML(session: {
   <div class="summary-box">
     <h3 style="margin-top: 0; text-align: center;">${modeLabels[session.mode] || session.mode}</h3>
     <div style="text-align: center; margin: 16px 0;">
-      <span class="threat-badge">${session.overall_threat_level.toUpperCase()} ALERT</span>
+      <span class="threat-badge">${(session.threat_level || 'green').toUpperCase()} ALERT</span>
     </div>
     <div class="summary-grid">
       <div class="stat">

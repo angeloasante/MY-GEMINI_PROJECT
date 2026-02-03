@@ -3,6 +3,8 @@
 import { MoreVertical, Image } from "lucide-react";
 import { SpeakingAvatar } from "./speaking-avatar";
 import { AnalysisResult } from "@/types/agents";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export interface Message {
   id: string;
@@ -20,45 +22,69 @@ interface ChatMessageProps {
   isSpeaking?: boolean;
 }
 
-// Simple markdown-like rendering for the analysis response
-function renderContent(content: string) {
-  // Split by double newlines to get paragraphs
-  const lines = content.split('\n');
-  
-  return lines.map((line, index) => {
-    // Headers with emoji
-    if (line.startsWith('🚩 **') || line.startsWith('💀 **') || 
-        line.startsWith('🗣️ **') || line.startsWith('🧠 **') || 
-        line.startsWith('💪 **') || line.startsWith('## ')) {
-      const headerText = line.replace(/\*\*/g, '').replace('## ', '');
-      return (
-        <h3 key={index} className="text-base font-bold text-white mt-4 mb-2 first:mt-0">
-          {headerText}
-        </h3>
-      );
-    }
-    
-    // Bold text
-    if (line.includes('**')) {
-      const parts = line.split(/\*\*(.*?)\*\*/g);
-      return (
-        <p key={index} className="mb-1">
-          {parts.map((part, i) => 
-            i % 2 === 1 ? <strong key={i} className="text-white font-semibold">{part}</strong> : part
-          )}
-        </p>
-      );
-    }
-    
-    // Empty lines become spacing
-    if (line.trim() === '') {
-      return <div key={index} className="h-2" />;
-    }
-    
-    // Regular text
-    return <p key={index} className="mb-1">{line}</p>;
-  });
-}
+// Markdown components with custom styling
+const markdownComponents = {
+  h1: ({ children, ...props }: any) => (
+    <h1 className="text-xl font-bold text-white mt-4 mb-2 first:mt-0" {...props}>{children}</h1>
+  ),
+  h2: ({ children, ...props }: any) => (
+    <h2 className="text-lg font-bold text-white mt-4 mb-2 first:mt-0" {...props}>{children}</h2>
+  ),
+  h3: ({ children, ...props }: any) => (
+    <h3 className="text-base font-bold text-white mt-3 mb-2 first:mt-0" {...props}>{children}</h3>
+  ),
+  h4: ({ children, ...props }: any) => (
+    <h4 className="text-sm font-bold text-white mt-3 mb-1 first:mt-0" {...props}>{children}</h4>
+  ),
+  p: ({ children, ...props }: any) => (
+    <p className="mb-2 leading-relaxed" {...props}>{children}</p>
+  ),
+  ul: ({ children, ...props }: any) => (
+    <ul className="list-disc list-inside mb-3 space-y-1 ml-2" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: any) => (
+    <ol className="list-decimal list-inside mb-3 space-y-1 ml-2" {...props}>{children}</ol>
+  ),
+  li: ({ children, ...props }: any) => (
+    <li className="text-gray-200" {...props}>{children}</li>
+  ),
+  strong: ({ children, ...props }: any) => (
+    <strong className="font-semibold text-white" {...props}>{children}</strong>
+  ),
+  em: ({ children, ...props }: any) => (
+    <em className="italic text-gray-300" {...props}>{children}</em>
+  ),
+  code: ({ inline, children, ...props }: any) => (
+    inline ? (
+      <code className="bg-[#3a3a3a] text-teal-400 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
+    ) : (
+      <code className="block bg-[#1a1a1a] text-gray-200 p-3 rounded-lg text-sm font-mono overflow-x-auto mb-3" {...props}>{children}</code>
+    )
+  ),
+  pre: ({ children, ...props }: any) => (
+    <pre className="bg-[#1a1a1a] p-3 rounded-lg overflow-x-auto mb-3" {...props}>{children}</pre>
+  ),
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-4 border-teal-500 pl-4 py-1 my-3 italic text-gray-300 bg-[#1a1a1a]/50 rounded-r" {...props}>{children}</blockquote>
+  ),
+  a: ({ children, href, ...props }: any) => (
+    <a href={href} className="text-teal-400 hover:text-teal-300 underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
+  ),
+  hr: () => (
+    <hr className="border-t border-gray-700 my-4" />
+  ),
+  table: ({ children, ...props }: any) => (
+    <div className="overflow-x-auto mb-3">
+      <table className="min-w-full border-collapse border border-gray-700" {...props}>{children}</table>
+    </div>
+  ),
+  th: ({ children, ...props }: any) => (
+    <th className="border border-gray-700 bg-[#2a2a2a] px-3 py-2 text-left font-semibold text-white" {...props}>{children}</th>
+  ),
+  td: ({ children, ...props }: any) => (
+    <td className="border border-gray-700 px-3 py-2 text-gray-200" {...props}>{children}</td>
+  ),
+};
 
 export function ChatMessage({ message, isSpeaking = false }: ChatMessageProps) {
   const isUser = message.role === "user";
@@ -120,10 +146,13 @@ export function ChatMessage({ message, isSpeaking = false }: ChatMessageProps) {
             </div>
           )}
 
-          <div className="text-sm leading-relaxed">
-            {isAnalysisResponse ? renderContent(message.content) : (
-              <div className="whitespace-pre-wrap">{message.content}</div>
-            )}
+          <div className="text-sm leading-relaxed prose prose-invert max-w-none">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {message.content}
+            </ReactMarkdown>
           </div>
 
           <button className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">

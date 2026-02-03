@@ -82,8 +82,8 @@ export async function GET(request: NextRequest) {
           : null;
 
         // Get most common threat level
-        const threatCounts = history.reduce((acc, h) => {
-          acc[h.overall_threat_level] = (acc[h.overall_threat_level] || 0) + 1;
+        const threatCounts = history.reduce((acc, h: any) => {
+          acc[h.threat_level] = (acc[h.threat_level] || 0) + 1;
           return acc;
         }, {} as Record<string, number>);
         const mostCommonThreat = Object.entries(threatCounts)

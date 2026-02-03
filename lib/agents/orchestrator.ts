@@ -124,13 +124,22 @@ export async function runAnalysisPipeline(
         const savedSession = await saveAnalysisSession({
           user_id: userId,
           mode,
+          input_type: input.imageData ? "screenshot" : "text",
+          input_content: input.conversationText || '[Image input]',
+          input_mime_type: input.mimeType,
           platform: extraction.platform,
           relationship_type: extraction.relationshipType,
-          overall_threat_level: classification.overallThreatLevel,
+          threat_level: classification.overallThreatLevel,
           health_score: psychology.relationshipHealthScore,
           tactics_count: classification.tacticsDetected.length,
-          raw_input: input.conversationText || '[Image input]',
-          full_response: result,
+          primary_tactic: classification.tacticsDetected[0]?.tactic,
+          extracted_data: extraction,
+          classification_data: classification,
+          psychology_data: psychology,
+          defense_data: defenses,
+          guardian_response: guardian,
+          voice_script: guardian.voiceScript,
+          processing_time_ms: processingTime,
         });
 
         // Save detected tactics
