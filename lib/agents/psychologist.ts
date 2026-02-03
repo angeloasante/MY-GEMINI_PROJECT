@@ -37,7 +37,7 @@ export async function analyzesPsychology(
   mode: AnalysisMode
 ): Promise<PsychologicalAnalysis> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     generationConfig: {
       temperature: 0.4, // Slightly higher for nuanced analysis
       responseMimeType: 'application/json',

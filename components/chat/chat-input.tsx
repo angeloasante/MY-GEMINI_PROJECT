@@ -8,8 +8,8 @@ interface ChatInputProps {
   onSendImage?: (imageBase64: string, mimeType: string) => void;
   isLoading?: boolean;
   placeholder?: string;
-  voiceEnabled: boolean;
-  onToggleVoice: () => void;
+  voiceEnabled?: boolean;
+  onToggleVoice?: () => void;
 }
 
 interface ImagePreview {
@@ -182,22 +182,24 @@ export function ChatInput({
           rows={1}
         />
 
-        {/* Voice Toggle Button */}
-        <button
-          onClick={onToggleVoice}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 ${
-            voiceEnabled
-              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-              : "bg-[#3a3a3a] text-gray-400 hover:bg-[#444]"
-          }`}
-          title={voiceEnabled ? "Voice responses ON" : "Voice responses OFF"}
-        >
-          {voiceEnabled ? (
-            <Volume2 className="w-5 h-5" />
-          ) : (
-            <VolumeX className="w-5 h-5" />
-          )}
-        </button>
+        {/* Voice Toggle Button - only show if onToggleVoice is provided */}
+        {onToggleVoice && (
+          <button
+            onClick={onToggleVoice}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 ${
+              voiceEnabled
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                : "bg-[#3a3a3a] text-gray-400 hover:bg-[#444]"
+            }`}
+            title={voiceEnabled ? "Voice responses ON" : "Voice responses OFF"}
+          >
+            {voiceEnabled ? (
+              <Volume2 className="w-5 h-5" />
+            ) : (
+              <VolumeX className="w-5 h-5" />
+            )}
+          </button>
+        )}
 
         <button
           onClick={handleSubmit}

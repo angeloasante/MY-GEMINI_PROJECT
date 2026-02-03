@@ -21,7 +21,7 @@ interface ModeDetectionResult {
 
 export async function detectAnalysisMode(input: AgentInput): Promise<ModeDetectionResult> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     generationConfig: {
       temperature: 0.1,
       responseMimeType: 'application/json',
@@ -101,7 +101,7 @@ export async function detectAnalysisMode(input: AgentInput): Promise<ModeDetecti
 // ============================================
 export async function extractConversation(input: AgentInput): Promise<ExtractedConversation> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     generationConfig: {
       temperature: 0.1, // Low temp for accurate extraction
       responseMimeType: 'application/json',

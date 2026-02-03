@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { User, Session, AuthChangeEvent, SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   ChatSidebar,
   ChatMessages,
@@ -8,15 +10,17 @@ import {
   Message,
   ChatHistoryItem,
 } from "../components/chat";
+import { ModeToggle, AppMode } from "../components/chat/mode-toggle";
+import { AuthForm, ProfileDropdown } from "../components/auth";
 import { AnalysisResult } from "@/types/agents";
-
-interface StoredChat {
-  id: string;
-  title: string;
-  messages: Message[];
-  createdAt: string;
-  updatedAt: string;
-}
+import {
+  getUserChats,
+  createChat,
+  updateChat,
+  deleteChat,
+  UserChat,
+  ChatMessage as DBChatMessage,
+} from "@/lib/supabase-client";
 
 interface AudioData {
   audioBase64: string;
@@ -27,25 +31,31 @@ interface AudioData {
   } | null;
 }
 
-const STORAGE_KEY = "gaslighter-detect-chats";
-
-function loadChatsFromStorage(): StoredChat[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
+// Convert DB messages to component messages
+function dbToComponentMessages(dbMessages: DBChatMessage[]): Message[] {
+  return dbMessages.map((m) => ({
+    id: m.id,
+    role: m.role,
+    content: m.content,
+    timestamp: new Date(m.timestamp),
+    imageBase64: m.imageBase64,
+    mimeType: m.mimeType,
+  }));
 }
 
-function saveChatsToStorage(chats: StoredChat[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+// Convert component messages to DB messages
+function componentToDbMessages(messages: Message[]): DBChatMessage[] {
+  return messages.map((m) => ({
+    id: m.id,
+    role: m.role,
+    content: m.content,
+    timestamp: m.timestamp.toISOString(),
+    imageBase64: m.imageBase64,
+    mimeType: m.mimeType,
+  }));
 }
 
-// Browser console logging with prefix
+// Browser console logging
 const log = (message: string, data?: unknown) => {
   const style = "color: #8b5cf6; font-weight: bold;";
   if (data !== undefined) {
@@ -65,48 +75,105 @@ const logError = (message: string, data?: unknown) => {
 };
 
 export default function Home() {
-  const [chats, setChats] = useState<StoredChat[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [chats, setChats] = useState<UserChat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<AudioData | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [appMode, setAppMode] = useState<AppMode>("personal");
+  const [businessMessages, setBusinessMessages] = useState<Message[]>([]);
+  const [businessChatId, setBusinessChatId] = useState<string | null>(null);
+  const [businessVoiceEnabled, setBusinessVoiceEnabled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Create Supabase client only on client-side using useMemo
+  const supabase = useMemo<SupabaseClient | null>(() => {
+    if (typeof window === "undefined") return null;
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }, []);
+
+  // Set mounted after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Check auth state on mount
+  useEffect(() => {
+    if (!supabase) return;
+    
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setAuthLoading(false);
+    };
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  // Load chats from database when user is authenticated or mode changes
+  useEffect(() => {
+    const loadChats = async () => {
+      if (!user) {
+        setChats([]);
+        return;
+      }
+      try {
+        const userChats = await getUserChats(user.id, appMode);
+        setChats(userChats || []);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('relation') && errorMessage.includes('does not exist')) {
+          console.log("Chat table not set up yet - run the SQL in supabase/user-chats.sql");
+        } else {
+          console.error("Failed to load chats:", errorMessage);
+        }
+        setChats([]);
+      }
+    };
+    loadChats();
+  }, [user, appMode]);
+
+  // Check screen size for mobile sidebar
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobile = window.innerWidth < 768;
+      setIsSidebarCollapsed(isMobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
 
   const fetchTTS = async (text: string): Promise<AudioData | null> => {
-    log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     log("fetchTTS called", { textLength: text.length, voiceEnabled });
     
     try {
-      log("Sending TTS request to /api/tts...");
-      const startTime = Date.now();
-      
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
 
-      const elapsed = Date.now() - startTime;
-      log(`TTS response received in ${elapsed}ms`, { status: response.status });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        logError("TTS request failed:", { status: response.status, error: errorData });
-        return null;
-      }
+      if (!response.ok) return null;
 
       const data = await response.json();
-      log("TTS data parsed successfully", {
-        hasAudioBase64: !!data.audio_base64,
-        audioLength: data.audio_base64?.length || 0,
-        hasAlignment: !!data.alignment,
-        alignmentChars: data.alignment?.characters?.length || 0
-      });
-      
-      log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      
       return {
         audioBase64: data.audio_base64,
         alignment: data.alignment,
@@ -117,24 +184,11 @@ export default function Home() {
     }
   };
 
-  // Load chats from localStorage on mount
-  useEffect(() => {
-    const storedChats = loadChatsFromStorage();
-    setChats(storedChats);
-  }, []);
-
-  // Save chats to localStorage whenever they change
-  useEffect(() => {
-    if (chats.length > 0) {
-      saveChatsToStorage(chats);
-    }
-  }, [chats]);
-
   const chatHistory: ChatHistoryItem[] = chats.map((chat) => ({
     id: chat.id,
     title: chat.title,
-    createdAt: new Date(chat.createdAt),
-    updatedAt: new Date(chat.updatedAt),
+    createdAt: new Date(chat.created_at),
+    updatedAt: new Date(chat.updated_at),
   }));
 
   const handleToggleSidebar = useCallback(() => {
@@ -144,32 +198,43 @@ export default function Home() {
   const handleNewChat = useCallback(() => {
     setActiveChatId(null);
     setMessages([]);
+    setBusinessChatId(null);
+    setBusinessMessages([]);
   }, []);
 
   const handleSelectChat = useCallback((id: string) => {
     const chat = chats.find((c) => c.id === id);
     if (chat) {
-      setActiveChatId(id);
-      setMessages(
-        chat.messages.map((m) => ({
-          ...m,
-          timestamp: new Date(m.timestamp),
-        }))
-      );
+      if (appMode === "personal") {
+        setActiveChatId(id);
+        setMessages(dbToComponentMessages(chat.messages));
+      } else {
+        setBusinessChatId(id);
+        setBusinessMessages(dbToComponentMessages(chat.messages));
+      }
     }
-  }, [chats]);
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+      setIsSidebarCollapsed(true);
+    }
+  }, [chats, appMode]);
 
-  const handleDeleteChat = useCallback((id: string) => {
-    setChats((prev) => {
-      const updated = prev.filter((c) => c.id !== id);
-      saveChatsToStorage(updated);
-      return updated;
-    });
-    if (activeChatId === id) {
-      setActiveChatId(null);
-      setMessages([]);
+  const handleDeleteChat = useCallback(async (id: string) => {
+    try {
+      await deleteChat(id);
+      setChats((prev) => prev.filter((c) => c.id !== id));
+      if (activeChatId === id) {
+        setActiveChatId(null);
+        setMessages([]);
+      }
+      if (businessChatId === id) {
+        setBusinessChatId(null);
+        setBusinessMessages([]);
+      }
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
     }
-  }, [activeChatId]);
+  }, [activeChatId, businessChatId]);
 
   const generateTitle = async (chatMessages: Message[]) => {
     try {
@@ -195,12 +260,10 @@ export default function Home() {
 
   const handleSendMessage = useCallback(
     async (content: string) => {
-      log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      log("handleSendMessage called", { contentLength: content.length, voiceEnabled });
+      if (!user) return;
+      log("handleSendMessage called", { contentLength: content.length });
       
-      // Clear any previous audio
       setCurrentAudio(null);
-      log("Previous audio cleared");
 
       const userMessage: Message = {
         id: crypto.randomUUID(),
@@ -211,44 +274,33 @@ export default function Home() {
 
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
-      log("User message added to state");
 
-      // Create new chat if needed
       let currentChatId = activeChatId;
+      
+      // Create new chat in database if needed
       if (!currentChatId) {
-        currentChatId = crypto.randomUUID();
-        log("Creating new chat:", currentChatId);
-        const newChat: StoredChat = {
-          id: currentChatId,
-          title: "New Chat...",
-          messages: updatedMessages,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setChats((prev) => [newChat, ...prev]);
-        setActiveChatId(currentChatId);
+        try {
+          const newChat = await createChat(user.id, "personal", "New Chat...", componentToDbMessages(updatedMessages));
+          currentChatId = newChat.id;
+          setActiveChatId(currentChatId);
+          setChats((prev) => [newChat, ...prev]);
+        } catch (error) {
+          console.error("Failed to create chat:", error);
+        }
       } else {
-        log("Updating existing chat:", currentChatId);
-        // Update existing chat with new message
-        setChats((prev) =>
-          prev.map((c) =>
-            c.id === currentChatId
-              ? { ...c, messages: updatedMessages, updatedAt: new Date().toISOString() }
-              : c
-          )
-        );
+        try {
+          await updateChat(currentChatId, { messages: componentToDbMessages(updatedMessages) });
+        } catch (error) {
+          console.error("Failed to update chat:", error);
+        }
       }
 
       setIsLoading(true);
-      log("Sending request to /api/chat...");
 
       try {
-        const chatStartTime = Date.now();
         const response = await fetch("/api/chat", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: updatedMessages.map((m) => ({
               role: m.role,
@@ -257,15 +309,9 @@ export default function Home() {
           }),
         });
 
-        const chatElapsed = Date.now() - chatStartTime;
-        log(`Chat response received in ${chatElapsed}ms`, { status: response.status });
-
-        if (!response.ok) {
-          throw new Error("Failed to get response");
-        }
+        if (!response.ok) throw new Error("Failed to get response");
 
         const data = await response.json();
-        log("Chat response parsed", { contentLength: data.content?.length || 0 });
 
         const assistantMessage: Message = {
           id: crypto.randomUUID(),
@@ -277,70 +323,152 @@ export default function Home() {
         const finalMessages = [...updatedMessages, assistantMessage];
         setMessages(finalMessages);
         setIsLoading(false);
-        log("Assistant message added to state");
 
-        // Fetch TTS (after showing the message) if voice is enabled
-        if (voiceEnabled) {
-          log("Voice enabled, initiating TTS fetch...");
-          
-          fetchTTS(data.content).then((audioData) => {
-            log("TTS fetch completed", { hasData: !!audioData });
-            if (audioData) {
-              log("Setting currentAudio state with audio data");
-              setCurrentAudio(audioData);
+        // Update chat in database
+        if (currentChatId) {
+          try {
+            if (updatedMessages.length === 1) {
+              const title = await generateTitle(finalMessages);
+              await updateChat(currentChatId, { title, messages: componentToDbMessages(finalMessages) });
+              setChats((prev) => prev.map((c) => c.id === currentChatId ? { ...c, title, messages: componentToDbMessages(finalMessages) } : c));
             } else {
-              logError("TTS returned null audio data");
+              await updateChat(currentChatId, { messages: componentToDbMessages(finalMessages) });
             }
-          });
-        } else {
-          log("Voice disabled, skipping TTS");
+          } catch (error) {
+            console.error("Failed to update chat:", error);
+          }
         }
 
-        // Update chat with assistant message
-        const chatIdToUpdate = currentChatId;
-        setChats((prev) =>
-          prev.map((c) =>
-            c.id === chatIdToUpdate
-              ? { ...c, messages: finalMessages, updatedAt: new Date().toISOString() }
-              : c
-          )
-        );
-
-        // Generate title after first exchange (2 messages: user + assistant)
-        if (updatedMessages.length === 1) {
-          const title = await generateTitle(finalMessages);
-          setChats((prev) =>
-            prev.map((c) =>
-              c.id === chatIdToUpdate ? { ...c, title } : c
-            )
-          );
+        // TTS if enabled
+        if (voiceEnabled) {
+          fetchTTS(data.content).then((audioData) => {
+            if (audioData) setCurrentAudio(audioData);
+          });
         }
       } catch (error) {
         console.error("Error:", error);
         const errorMessage: Message = {
           id: crypto.randomUUID(),
           role: "assistant",
-          content:
-            "Sorry, I encountered an error processing your request. Please try again.",
+          content: "Sorry, I encountered an error processing your request. Please try again.",
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, errorMessage]);
         setIsLoading(false);
       }
     },
-    [messages, activeChatId, voiceEnabled]
+    [messages, activeChatId, voiceEnabled, user]
   );
 
-  // Handle image analysis with multi-agent pipeline (auto-detection)
+  // Handle business mode chat
+  const handleBusinessMessage = useCallback(
+    async (content: string) => {
+      if (!user) return;
+      log("handleBusinessMessage called", { contentLength: content.length });
+
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content,
+        timestamp: new Date(),
+      };
+
+      const updatedMessages = [...businessMessages, userMessage];
+      setBusinessMessages(updatedMessages);
+
+      let currentChatId = businessChatId;
+
+      // Create new chat in database if needed
+      if (!currentChatId) {
+        try {
+          const newChat = await createChat(user.id, "business", "Business Chat", componentToDbMessages(updatedMessages));
+          currentChatId = newChat.id;
+          setBusinessChatId(currentChatId);
+          setChats((prev) => [newChat, ...prev]);
+        } catch (error) {
+          console.error("Failed to create chat:", error);
+        }
+      } else {
+        try {
+          await updateChat(currentChatId, { messages: componentToDbMessages(updatedMessages) });
+        } catch (error) {
+          console.error("Failed to update chat:", error);
+        }
+      }
+
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("/api/business-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: updatedMessages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
+
+        if (!response.ok) throw new Error("Failed to get response");
+
+        const data = await response.json();
+
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: data.content,
+          timestamp: new Date(),
+        };
+
+        const finalMessages = [...updatedMessages, assistantMessage];
+        setBusinessMessages(finalMessages);
+        setIsLoading(false);
+
+        // TTS if voice enabled for business mode
+        if (businessVoiceEnabled) {
+          fetchTTS(data.content).then((audioData) => {
+            if (audioData) setCurrentAudio(audioData);
+          });
+        }
+
+        // Update chat in database
+        if (currentChatId) {
+          try {
+            if (updatedMessages.length === 1) {
+              const title = await generateTitle(finalMessages);
+              await updateChat(currentChatId, { title, messages: componentToDbMessages(finalMessages) });
+              setChats((prev) => prev.map((c) => c.id === currentChatId ? { ...c, title, messages: componentToDbMessages(finalMessages) } : c));
+            } else {
+              await updateChat(currentChatId, { messages: componentToDbMessages(finalMessages) });
+            }
+          } catch (error) {
+            console.error("Failed to update chat:", error);
+          }
+        }
+      } catch (error) {
+        console.error("Business chat error:", error);
+        const errorMessage: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+          timestamp: new Date(),
+        };
+        setBusinessMessages((prev) => [...prev, errorMessage]);
+        setIsLoading(false);
+      }
+    },
+    [businessMessages, businessChatId, businessVoiceEnabled, user]
+  );
+
+  // Handle image analysis with multi-agent pipeline
   const handleImageAnalysis = useCallback(
     async (imageBase64: string, mimeType: string) => {
-      log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      log("handleImageAnalysis called", { mimeType, imageLength: imageBase64.length, mode: 'auto-detect' });
+      if (!user) return;
+      log("handleImageAnalysis called", { mimeType, imageLength: imageBase64.length });
 
-      // Clear any previous audio
       setCurrentAudio(null);
 
-      // Create a user message showing they sent an image
       const userMessage: Message = {
         id: crypto.randomUUID(),
         role: "user",
@@ -352,50 +480,32 @@ export default function Home() {
 
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
-      log("User image message added to state");
 
-      // Create new chat if needed
       let currentChatId = activeChatId;
+      
       if (!currentChatId) {
-        currentChatId = crypto.randomUUID();
-        log("Creating new chat for image analysis:", currentChatId);
-        const newChat: StoredChat = {
-          id: currentChatId,
-          title: "🛡️ Screenshot Analysis",
-          messages: updatedMessages,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setChats((prev) => [newChat, ...prev]);
-        setActiveChatId(currentChatId);
-      } else {
-        setChats((prev) =>
-          prev.map((c) =>
-            c.id === currentChatId
-              ? { ...c, messages: updatedMessages, updatedAt: new Date().toISOString() }
-              : c
-          )
-        );
+        try {
+          const newChat = await createChat(user.id, "personal", "🛡️ Screenshot Analysis", componentToDbMessages(updatedMessages));
+          currentChatId = newChat.id;
+          setActiveChatId(currentChatId);
+          setChats((prev) => [newChat, ...prev]);
+        } catch (error) {
+          console.error("Failed to create chat:", error);
+        }
       }
 
       setIsLoading(true);
-      log("Sending image to /api/analyze for multi-agent analysis (auto-detection)...");
 
       try {
-        const startTime = Date.now();
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             imageData: imageBase64,
             mimeType,
-            // No mode specified - will be auto-detected by the API
             saveToDatabase: true,
           }),
         });
-
-        const elapsed = Date.now() - startTime;
-        log(`Analysis response received in ${elapsed}ms`, { status: response.status });
 
         if (!response.ok) {
           const errorData = await response.text();
@@ -403,62 +513,69 @@ export default function Home() {
         }
 
         const result = await response.json();
-        log("Analysis result received", {
-          success: result.success,
-          hasTiming: !!result.timing,
-        });
-
         const analysisData = result.data as AnalysisResult;
-        
-        // Create the assistant message with the full markdown response
+
         const assistantMessage: Message = {
           id: crypto.randomUUID(),
           role: "assistant",
           content: analysisData.guardian.fullMarkdownResponse,
           timestamp: new Date(),
-          analysisResult: analysisData, // Store full analysis for reference
+          analysisResult: analysisData,
         };
 
         const finalMessages = [...updatedMessages, assistantMessage];
         setMessages(finalMessages);
         setIsLoading(false);
-        log("Analysis response added to messages");
 
-        // Fetch TTS for the voice script if voice is enabled
-        if (voiceEnabled && analysisData.guardian.voiceScript) {
-          log("Voice enabled, generating TTS for analysis...");
-          fetchTTS(analysisData.guardian.voiceScript).then((audioData) => {
-            if (audioData) {
-              log("TTS for analysis ready");
-              setCurrentAudio(audioData);
-            }
-          });
+        // Update chat in database
+        if (currentChatId) {
+          try {
+            await updateChat(currentChatId, { messages: componentToDbMessages(finalMessages) });
+          } catch (error) {
+            console.error("Failed to update chat:", error);
+          }
         }
 
-        // Update chat with assistant message
-        const chatIdToUpdate = currentChatId;
-        setChats((prev) =>
-          prev.map((c) =>
-            c.id === chatIdToUpdate
-              ? { ...c, messages: finalMessages, updatedAt: new Date().toISOString() }
-              : c
-          )
-        );
+        // TTS if enabled
+        if (voiceEnabled && analysisData.guardian.voiceScript) {
+          fetchTTS(analysisData.guardian.voiceScript).then((audioData) => {
+            if (audioData) setCurrentAudio(audioData);
+          });
+        }
       } catch (error) {
         logError("Image analysis failed:", error);
         const errorMessage: Message = {
           id: crypto.randomUUID(),
           role: "assistant",
-          content:
-            "😔 Sorry bestie, I couldn't analyze that screenshot. Try uploading again or make sure it's a clear image of a conversation.",
+          content: "😔 Sorry bestie, I couldn't analyze that screenshot. Try uploading again or make sure it's a clear image of a conversation.",
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, errorMessage]);
         setIsLoading(false);
       }
     },
-    [messages, activeChatId, voiceEnabled]
+    [messages, activeChatId, voiceEnabled, user]
   );
+
+  // Mode change handler - preserve messages when switching
+  const handleModeChange = useCallback((newMode: AppMode) => {
+    setAppMode(newMode);
+    // Don't clear messages - they should persist when switching back
+  }, []);
+
+  // Show loading spinner while mounting or checking auth
+  if (!mounted || authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Show auth form if not logged in
+  if (!user) {
+    return <AuthForm />;
+  }
 
   return (
     <div className="flex h-screen bg-[#121212]">
@@ -466,27 +583,58 @@ export default function Home() {
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
         chatHistory={chatHistory}
-        activeChatId={activeChatId}
+        activeChatId={appMode === "personal" ? activeChatId : businessChatId}
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
         audioData={currentAudio}
         onSpeakingChange={setIsSpeaking}
       />
-      <main className="flex-1 flex flex-col">
-        <ChatMessages 
-          messages={messages} 
-          isLoading={isLoading}
-          isSpeaking={isSpeaking}
-        />
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          onSendImage={handleImageAnalysis}
-          isLoading={isLoading}
-          placeholder="Paste a conversation or upload a screenshot..."
-          voiceEnabled={voiceEnabled}
-          onToggleVoice={() => setVoiceEnabled((prev) => !prev)}
-        />
+      <main className="flex-1 flex flex-col relative">
+        {/* Mode Toggle & Profile - Top Right */}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+          <ModeToggle
+            mode={appMode}
+            onModeChange={handleModeChange}
+            disabled={isLoading}
+          />
+          <ProfileDropdown user={user} />
+        </div>
+        
+        {appMode === "personal" ? (
+          <>
+            <ChatMessages 
+              messages={messages} 
+              isLoading={isLoading}
+              isSpeaking={isSpeaking}
+              mode="personal"
+            />
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              onSendImage={handleImageAnalysis}
+              isLoading={isLoading}
+              placeholder="Paste a conversation or upload a screenshot..."
+              voiceEnabled={voiceEnabled}
+              onToggleVoice={() => setVoiceEnabled((prev) => !prev)}
+            />
+          </>
+        ) : (
+          <>
+            <ChatMessages 
+              messages={businessMessages} 
+              isLoading={isLoading}
+              isSpeaking={isSpeaking}
+              mode="business"
+            />
+            <ChatInput
+              onSendMessage={handleBusinessMessage}
+              isLoading={isLoading}
+              placeholder="Ask about business, visa requirements, travel..."
+              voiceEnabled={businessVoiceEnabled}
+              onToggleVoice={() => setBusinessVoiceEnabled((prev) => !prev)}
+            />
+          </>
+        )}
       </main>
     </div>
   );

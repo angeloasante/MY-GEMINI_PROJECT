@@ -16,8 +16,10 @@
 7. [Database Schema](#database-schema)
 8. [Frontend Components](#frontend-components)
 9. [Voice & Avatar System](#voice--avatar-system)
-10. [Environment Variables](#environment-variables)
-11. [Tech Stack](#tech-stack)
+10. [Business Mode](#business-mode)
+11. [Authentication System](#authentication-system)
+12. [Environment Variables](#environment-variables)
+13. [Tech Stack](#tech-stack)
 
 ---
 
@@ -653,6 +655,123 @@ gaslighter-detect/
 | Supabase persistence | ✅ Complete |
 | Chat history | ✅ Complete |
 | API documentation | ✅ Complete |
+| **Business Mode** | ✅ Complete |
+| **User Authentication** | ✅ Complete |
+| **Diaspora AI Visa API** | ✅ Complete |
+| **Per-User Chat Storage** | ✅ Complete |
+| **Mode Toggle (Personal/Business)** | ✅ Complete |
+
+---
+
+## 💼 Business Mode
+
+### Overview
+The application now supports a **Business Mode** alongside the Personal (manipulation detection) mode. Users can switch between modes using a toggle in the top-right corner.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Mode Toggle** | Switch between Personal and Business modes instantly |
+| **Separate Chat Histories** | Each mode maintains its own chat history |
+| **Business Assistant** | Powered by Gemini 3 for professional queries |
+| **Voice Responses** | TTS support with animated avatar |
+| **Diaspora AI Visa API** | Real-time visa requirement checks |
+
+### Business Mode API Endpoint
+
+**`POST /api/business-chat`**
+
+```typescript
+// Request
+{
+  messages: [
+    { role: "user", content: "What visa do I need to travel from Ghana to Canada?" }
+  ]
+}
+
+// Response
+{
+  content: "For traveling from Ghana to Canada, you will need..."
+}
+```
+
+### Diaspora AI Visa API Integration
+
+The business mode can query the Diaspora AI Visa API for real-time visa requirements:
+
+**API Endpoint:** `https://api.diasporaai.com/api/v1/visa/requirements`
+
+**Example Request:**
+```bash
+curl -X POST https://api.diasporaai.com/api/v1/visa/requirements \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"origin": "Ghana", "destination": "Canada", "purpose": "tourism"}'
+```
+
+**Tested & Verified:** ✅ API integration working with key `dsp_visa_p8vDd8pZt5LhZKLScH5YL9yAWtEm2Kvn`
+
+---
+
+## 🔐 Authentication System
+
+### Overview
+Full user authentication using Supabase Auth with support for email/password and GitHub OAuth.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Email Sign Up** | Create account with email and password |
+| **Email Sign In** | Sign in with existing credentials |
+| **GitHub OAuth** | One-click sign in with GitHub |
+| **No Email Verification** | Users can start immediately |
+| **Profile Dropdown** | Shows user initials, email, and sign out option |
+| **Per-User Storage** | All chats saved to database per user |
+| **Cross-Device Sync** | Access your chats from any device |
+
+### Auth Components
+
+**`components/auth/auth-form.tsx`**
+- Split-screen layout (testimonial left, form right)
+- Two-step flow: email first, then password
+- GitHub OAuth button
+- Terms of Service and Privacy Policy links
+
+**`components/auth/profile-dropdown.tsx`**
+- User avatar with initials
+- Displays user email
+- Sign out functionality
+
+### Database Schema for User Chats
+
+```sql
+CREATE TABLE user_chats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  mode TEXT NOT NULL DEFAULT 'personal' CHECK (mode IN ('personal', 'business')),
+  title TEXT NOT NULL DEFAULT 'New Chat',
+  messages JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security ensures users can only access their own chats
+ALTER TABLE user_chats ENABLE ROW LEVEL SECURITY;
+```
+
+### Supabase Client Helpers
+
+**`lib/supabase-client.ts`**
+```typescript
+// Available functions:
+getUserChats(userId, mode?)  // Get all user chats, optionally filtered by mode
+getChatById(chatId)          // Get a specific chat
+createChat(userId, mode, title, messages)  // Create new chat
+updateChat(chatId, { title?, messages? })  // Update existing chat
+deleteChat(chatId)           // Delete a chat
+```
 
 ---
 

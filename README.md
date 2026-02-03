@@ -44,7 +44,41 @@
 
 ---
 
-## 🚀 Quick Start
+## � Business Mode (NEW)
+
+Gaslighter Detect now includes a **Business Assistant** mode for professional use cases:
+
+### Features
+- **Mode Toggle** — Switch between Personal (manipulation detection) and Business modes
+- **Diaspora AI Visa API Integration** — Check visa requirements for international travel
+- **Professional Assistance** — Help with business inquiries, travel planning, document analysis
+- **Voice Responses** — TTS support for business mode with animated avatar
+- **Separate Chat History** — Personal and Business chats stored separately
+
+### Diaspora AI Visa API
+The business mode integrates with the Diaspora AI Visa API for real-time visa requirements:
+```env
+DIASPORA_AI_VISA_API_KEY=your_api_key
+```
+
+### API Endpoint
+- `POST /api/business-chat` — Business assistant powered by Gemini 3
+
+---
+
+## 🔐 Authentication (NEW)
+
+Full user authentication system:
+
+- **Email/Password Sign Up & Sign In** — No email verification required
+- **GitHub OAuth** — One-click sign in with GitHub
+- **Profile Dropdown** — Quick access to sign out
+- **Per-User Chat Storage** — Chats sync across all devices
+- **Supabase Auth** — Secure authentication backend
+
+---
+
+## �🚀 Quick Start
 
 ### Prerequisites
 
@@ -77,9 +111,13 @@ GEMINI_API_KEY=your_gemini_api_key
 # Optional - Voice
 ELEVENLABS_API_KEY=your_elevenlabs_key
 
-# Optional - Database
-SUPABASE_URL=your_supabase_url
+# Required - Database & Auth
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Optional - Business Mode (Diaspora AI Visa API)
+DIASPORA_AI_VISA_API_KEY=your_diaspora_visa_key
 ```
 
 ### Database Setup (Optional)

@@ -105,7 +105,7 @@ export async function runAnalysisPipeline(
       metadata: {
         processingTimeMs: processingTime,
         agentsUsed: ['extractor', 'classifier', 'psychologist', 'defender', 'guardian'],
-        modelVersion: 'gemini-2.0-flash',
+        modelVersion: 'gemini-3-flash-preview',
         modeDetection: {
           detectedMode: mode,
           confidence: modeConfidence,

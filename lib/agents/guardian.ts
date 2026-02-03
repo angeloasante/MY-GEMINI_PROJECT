@@ -55,7 +55,7 @@ export async function synthesizeResponse(
   mode: AnalysisMode
 ): Promise<GuardianResponse> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     generationConfig: {
       temperature: 0.7, // Higher for creative, engaging output
       responseMimeType: 'application/json',
