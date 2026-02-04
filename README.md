@@ -2,11 +2,12 @@
 
 **AI-Powered Manipulation Detection for Conversations**
 
-> Detect manipulation tactics, identify scams, and improve your communication patterns with a 5-agent AI pipeline powered by Gemini 3.0-flash-preview.
+> Detect manipulation tactics, identify scams, and improve your communication patterns with a 5-agent AI pipeline powered by Gemini 3 Flash Preview.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
-[![Gemini](https://img.shields.io/badge/Gemini-2.0--flash-blue)](https://ai.google.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![Gemini](https://img.shields.io/badge/Gemini-3--Flash--Preview-blue)](https://ai.google.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
+[![Google Maps](https://img.shields.io/badge/Google_Maps-API-red)](https://developers.google.com/maps)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
@@ -44,41 +45,87 @@
 
 ---
 
-## � Business Mode (NEW)
+## 💼 Business Mode
 
-Gaslighter Detect now includes a **Business Assistant** mode for professional use cases:
+Gaslighter Detect includes a powerful **Business Assistant** mode for professional use cases:
 
-### Features
+### Core Features
 - **Mode Toggle** — Switch between Personal (manipulation detection) and Business modes
-- **Diaspora AI Visa API Integration** — Check visa requirements for international travel
-- **Professional Assistance** — Help with business inquiries, travel planning, document analysis
-- **Voice Responses** — TTS support for business mode with animated avatar
+- **Auto-Detect Chat** — AI automatically routes queries to specialized agents
+- **Voice Responses** — TTS support with animated avatar
 - **Separate Chat History** — Personal and Business chats stored separately
 
-### Diaspora AI Visa API
-The business mode integrates with the Diaspora AI Visa API for real-time visa requirements:
-```env
-DIASPORA_AI_VISA_API_KEY=your_api_key
-```
+### Specialized Business Agents
 
-### API Endpoint
-- `POST /api/business-chat` — Business assistant powered by Gemini 3
+| Agent | Purpose | Trigger Examples |
+|-------|---------|------------------|
+| 🌍 **VisaLens** | Visa requirements & immigration | "Do I need a visa for...", "Travel documents for..." |
+| ⚖️ **LegalLens** | Legal document analysis | "Review this contract...", "Legal implications of..." |
+| 🛡️ **ScamShield** | Business fraud detection | "Is this offer legit...", "Suspicious business email..." |
+| ✈️ **TripGuard** | Travel safety & itinerary planning | "Plan a trip to...", "Is it safe to travel to..." |
+
+### API Endpoints
+```
+POST /api/business-chat    # Main business chat (auto-detects intent)
+POST /api/business/visa    # Direct VisaLens queries
+POST /api/business/legal   # Direct LegalLens queries  
+POST /api/business/scam    # Direct ScamShield queries
+POST /api/business/trip    # Direct TripGuard queries
+```
 
 ---
 
-## 🔐 Authentication (NEW)
+## 🗺️ AI Itinerary Generation (NEW)
+
+Business Mode includes **AI-powered travel itinerary generation** with full Google Maps integration:
+
+### How It Works
+1. **Ask** — "Plan a 5-day trip to Rome" in Business Mode
+2. **Generate** — Gemini 3 Flash creates detailed day-by-day itinerary
+3. **Enrich** — Google Places API adds coordinates, photos, ratings, opening hours
+4. **Display** — Interactive sheet with Google Map, markers, and directions
+
+### Features
+| Feature | Description |
+|---------|-------------|
+| 📅 **Day-by-Day Planning** | Activities organized by day with times |
+| 📍 **Google Maps Integration** | Interactive map with markers for each activity |
+| 🗺️ **Route Directions** | Driving routes between activities |
+| ⭐ **Place Details** | Ratings, photos, hours, websites from Google Places |
+| 🎨 **Dark Mode Map** | Custom styled map matching app theme |
+| 📱 **Responsive Sheet** | Slide-up panel with day tabs |
+
+### Activity Types
+| Type | Icon | Color |
+|------|------|-------|
+| ✈️ Flight | Blue | `#3b82f6` |
+| 🏨 Hotel | Purple | `#8b5cf6` |
+| 🍽️ Restaurant | Amber | `#f59e0b` |
+| 🏛️ Attraction | Emerald | `#10b981` |
+| 🚕 Transport | Indigo | `#6366f1` |
+
+### Environment Variables for Maps
+```env
+GOOGLE_MAPS_API_KEY=your_server_side_key          # For Places API enrichment
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_client_key   # For frontend map display
+```
+
+---
+
+## 🔐 Authentication
 
 Full user authentication system:
 
 - **Email/Password Sign Up & Sign In** — No email verification required
 - **GitHub OAuth** — One-click sign in with GitHub
-- **Profile Dropdown** — Quick access to sign out
-- **Per-User Chat Storage** — Chats sync across all devices
+- **Profile Dropdown** — Shows user initials, email, and sign out option
+- **Per-User Chat Storage** — All chats saved to database per user
+- **Cross-Device Sync** — Access your chats from any device
 - **Supabase Auth** — Secure authentication backend
 
 ---
 
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -238,8 +285,8 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   (Screenshot/Text + Mode Selection)                                         │
 │        │                                                                     │
 │        ▼                                                                     │
-│   ┌─────────────────────────────────────────────────────────────────┐       │
-│   │  🔍 AGENT 1: EXTRACTOR (Vision AI)                              │       │
+│   ┌─────────────────────────────────────────────────────────────────┐        │
+│   │  🔍 AGENT 1: EXTRACTOR (Vision AI)                              │        │
 │   │  ───────────────────────────────────────────────────────────────│       │
 │   │  • OCR text extraction from screenshots                         │       │
 │   │  • Context identification (platform, participants)              │       │
@@ -247,8 +294,8 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  • Visual element analysis                                      │       │
 │   │  Output: Structured text with metadata                          │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
-│        │                                                                     │
-│        ▼                                                                     │
+│        │                                                                    │
+│        ▼                                                                    │
 │   ┌─────────────────────────────────────────────────────────────────┐       │
 │   │  🏷️ AGENT 2: CLASSIFIER (JSON Mode)                             │       │
 │   │  ───────────────────────────────────────────────────────────────│       │
@@ -258,10 +305,10 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  • Evidence extraction with quotes                              │       │
 │   │  Output: JSON array of detected patterns                        │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
-│        │                                                                     │
-│        ▼                                                                     │
+│        │                                                                    │
+│        ▼                                                                    │
 │   ┌─────────────────────────────────────────────────────────────────┐       │
-│   │  🧠 AGENT 3: PSYCHOLOGIST (Deep Reasoning)                      │       │
+│   │  🧠 AGENT 3: PSYCHOLOGIST (Deep Reasoning)                      │        │
 │   │  ───────────────────────────────────────────────────────────────│       │
 │   │  • Psychological impact assessment                              │       │
 │   │  • Relationship dynamics analysis                               │       │
@@ -269,8 +316,8 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  • Victim validation and support                                │       │
 │   │  Output: Empathetic analysis with context                       │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
-│        │                                                                     │
-│        ▼                                                                     │
+│        │                                                                    │
+│        ▼                                                                    │
 │   ┌─────────────────────────────────────────────────────────────────┐       │
 │   │  🛡️ AGENT 4: DEFENDER (Instruction Following)                   │       │
 │   │  ───────────────────────────────────────────────────────────────│       │
@@ -280,8 +327,8 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  • Safety planning resources                                    │       │
 │   │  Output: Actionable response options                            │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
-│        │                                                                     │
-│        ▼                                                                     │
+│        │                                                                    │
+│        ▼                                                                    │
 │   ┌─────────────────────────────────────────────────────────────────┐       │
 │   │  💜 AGENT 5: GUARDIAN (Creative Synthesis)                      │       │
 │   │  ───────────────────────────────────────────────────────────────│       │
@@ -291,13 +338,13 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  • Voice-optimized summary for TTS                              │       │
 │   │  Output: Complete analysis with audio script                    │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
-│        │                                                                     │
-│        ▼                                                                     │
+│        │                                                                    │
+│        ▼                                                                    │
 │   ┌────────────────────────┐    ┌────────────────────────┐                  │
 │   │    ElevenLabs TTS      │    │   Animated Avatar      │                  │
 │   │    Voice Generation    │────│   Speaking Animation   │                  │
 │   └────────────────────────┘    └────────────────────────┘                  │
-│                                                                              │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 

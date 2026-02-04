@@ -1,10 +1,10 @@
-# 🛡️ Gaslighter Detect v2.0
+# 🛡️ Gaslighter Detect v3.0
 
-## Multi-Agent AI System Powered by Gemini 2.0 Flash
+## Multi-Agent AI System Powered by Gemini 3 Flash Preview
 
 > **Hackathon Submission**: Google Gemini 3 Hackathon  
 > **Category**: AI for Social Good / Mental Health & Safety Tech  
-> **Core Technology**: Gemini 2.0-flash Vision + Multi-Agent Architecture + Supabase
+> **Core Technology**: Gemini 3 Flash Preview (gemini-3-flash-preview) + Multi-Agent Architecture + Supabase + Google Maps API
 
 ---
 
@@ -42,7 +42,7 @@
 | 🛡️ **Scam Shield** | Identify phishing, fraud, and scam attempts | Suspicious messages, too-good-to-be-true offers |
 | 🪞 **Self-Analysis** | Reflect on your own communication patterns | Personal growth, breaking unhealthy patterns |
 
-Simply screenshot a conversation, select your mode, and our **5-agent AI pipeline** powered by **Gemini 2.0-flash** delivers:
+Simply screenshot a conversation, select your mode, and our **5-agent AI pipeline** powered by **Gemini 3 Flash Preview** delivers:
 
 - 🔍 **What's happening** (extracted patterns with evidence)
 - 🧠 **Why it's problematic** (psychological explanation)
@@ -63,7 +63,7 @@ Simply screenshot a conversation, select your mode, and our **5-agent AI pipelin
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │             AGENT 1: THE EXTRACTOR ("The Eyes")                  │
-│         Gemini 2.0-flash Vision                                  │
+│         Gemini 3 Flash Preview Vision                            │
 │         • Extracts text from screenshot                          │
 │         • Identifies speakers & platform                         │
 │         • Detects URLs, phone numbers, emails (for scam mode)    │
@@ -240,10 +240,17 @@ evidence_vault (
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | Next.js 15, React 19, TypeScript, Tailwind CSS |
-| **AI Engine** | Gemini 2.0-flash (5-agent pipeline) |
+| **Framework** | Next.js 16.1.6, React 19, TypeScript 5.x |
+| **AI Engine** | Gemini 3 Flash Preview (`gemini-3-flash-preview`) |
+| **Personal Mode** | 5-Agent Pipeline (Extractor, Classifier, Psychologist, Defender, Guardian) |
+| **Business Mode** | Auto-detect chat with 4 specialized agents (VisaLens, LegalLens, ScamShield, TripGuard) |
+| **Itinerary Planning** | AI-generated travel itineraries with Google Maps integration |
+| **Maps & Places** | Google Maps API + Google Places API (geocoding, place details, photos) |
 | **Voice** | ElevenLabs TTS (eleven_turbo_v2_5, speed 1.2) |
 | **Database** | Supabase (PostgreSQL + RLS) |
+| **Authentication** | Supabase Auth (Email + GitHub OAuth) |
+| **Styling** | Tailwind CSS 4.x |
+| **Animations** | Framer Motion |
 | **Export** | HTML/PDF report generation |
 | **Deployment** | Vercel |
 
@@ -255,30 +262,41 @@ evidence_vault (
 gaslighter-detect/
 ├── app/
 │   ├── api/
-│   │   ├── analyze/route.ts      # Multi-agent analysis endpoint
-│   │   ├── chat/route.ts         # Regular chat
-│   │   ├── tts/route.ts          # ElevenLabs TTS
-│   │   ├── history/route.ts      # Analysis history API
-│   │   ├── evidence/route.ts     # Evidence vault API
-│   │   └── export/route.ts       # PDF/HTML export
-│   └── page.tsx                  # Main UI with mode selector
+│   │   ├── analyze/route.ts       # Multi-agent analysis endpoint
+│   │   ├── chat/route.ts          # Personal chat
+│   │   ├── business-chat/route.ts # Business chat with itinerary detection
+│   │   ├── business/              # Business mode specialized agents
+│   │   │   ├── visa/route.ts      # VisaLens agent
+│   │   │   ├── legal/route.ts     # LegalLens agent
+│   │   │   ├── scam/route.ts      # ScamShield agent
+│   │   │   └── trip/route.ts      # TripGuard agent
+│   │   ├── tts/route.ts           # ElevenLabs TTS
+│   │   ├── history/route.ts       # Analysis history API
+│   │   ├── evidence/route.ts      # Evidence vault API
+│   │   └── export/route.ts        # PDF/HTML export
+│   └── page.tsx                   # Main UI with mode selector
 ├── components/
-│   └── chat/
-│       ├── chat-input.tsx        # Input with image upload
-│       ├── chat-message.tsx      # Message rendering
-│       ├── mode-selector.tsx     # Analysis mode picker
-│       └── speaking-avatar.tsx   # Animated avatar
+│   ├── chat/
+│   │   ├── chat-input.tsx         # Input with image upload
+│   │   ├── chat-message.tsx       # Message rendering
+│   │   ├── chat-messages.tsx      # Message list with itinerary button
+│   │   ├── mode-selector.tsx      # Analysis mode picker
+│   │   └── speaking-avatar.tsx    # Animated avatar
+│   └── itinerary/
+│       └── itinerary-sheet.tsx    # Slide-up itinerary with Google Maps
 ├── lib/
-│   ├── agents/
-│   │   ├── prompts.ts           # All system prompts
-│   │   ├── extractor.ts         # Agent 1: Vision
-│   │   ├── classifier.ts        # Agent 2: Classification
-│   │   ├── psychologist.ts      # Agent 3: Analysis
-│   │   ├── defender.ts          # Agent 4: Responses
-│   │   ├── guardian.ts          # Agent 5: Synthesis
-│   │   └── orchestrator.ts      # Pipeline coordinator
-│   ├── supabase.ts              # Database helpers
-│   └── taxonomy.ts              # All pattern definitions
+│   ├── agents/                    # Personal mode agents
+│   │   ├── prompts.ts             # All system prompts
+│   │   ├── extractor.ts           # Agent 1: Vision
+│   │   ├── classifier.ts          # Agent 2: Classification
+│   │   ├── psychologist.ts        # Agent 3: Analysis
+│   │   ├── defender.ts            # Agent 4: Responses
+│   │   ├── guardian.ts            # Agent 5: Synthesis
+│   │   └── orchestrator.ts        # Pipeline coordinator
+│   ├── itinerary/
+│   │   └── places.ts              # Google Places API enrichment
+│   ├── supabase.ts                # Database helpers
+│   └── taxonomy.ts                # All pattern definitions
 ├── types/
 │   ├── agents.ts                # Agent type definitions
 │   └── database.ts              # Supabase types
@@ -358,7 +376,82 @@ Generate exportable report.
 
 ---
 
-## 🔒 Safety & Ethics
+## �️ Business Mode & AI Itinerary
+
+### Overview
+Business Mode provides professional assistance with auto-detection of query intent. When travel planning is detected, it generates comprehensive itineraries with Google Maps integration.
+
+### Business Chat Flow
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      USER MESSAGE                                │
+│         "Plan a 5-day trip to Rome, Italy"                      │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│             GEMINI 3 FLASH PREVIEW                               │
+│         • Detects itinerary request                              │
+│         • Generates JSON with days, activities, locations        │
+│         ⏱️ ~2-3 seconds                                          │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│             GOOGLE PLACES ENRICHMENT                             │
+│         • Geocodes each activity location                        │
+│         • Fetches ratings, photos, opening hours                 │
+│         • Adds website, phone, Google Maps URL                   │
+│         ⏱️ ~1-2 seconds                                          │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│             ITINERARY SHEET UI                                   │
+│         • Day tabs for navigation                                │
+│         • Activity timeline with icons                           │
+│         • Interactive Google Map with markers                    │
+│         • Directions routing between activities                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Itinerary JSON Schema
+```json
+{
+  "type": "itinerary",
+  "title": "5-Day Rome Adventure",
+  "destination": "Rome, Italy",
+  "start_date": "2026-03-01",
+  "end_date": "2026-03-05",
+  "travel_style": "cultural",
+  "budget_level": "mid-range",
+  "days": [
+    {
+      "day_number": 1,
+      "title": "Ancient Rome",
+      "date": "2026-03-01",
+      "activities": [
+        {
+          "time": "09:00 AM",
+          "title": "Colosseum",
+          "type": "attraction",
+          "location": "Piazza del Colosseo, Rome",
+          "description": "Explore the iconic amphitheater",
+          "latitude": 41.8902,
+          "longitude": 12.4922,
+          "rating": 4.7,
+          "photos": ["https://..."],
+          "website": "https://parcocolosseo.it"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## �🔒 Safety & Ethics
 
 ### What We Do:
 - ✅ Provide educational information about manipulation patterns
@@ -422,14 +515,17 @@ npm run dev
 
 ---
 
-## 🏆 Why Gemini 2.0-flash?
+## 🏆 Why Gemini 3 Flash Preview?
 
-1. **Multimodal Vision**: Understands screenshot layouts, chat bubble colors, platform UI
-2. **JSON Mode**: Guaranteed structured output for pipeline data flow
-3. **Reasoning**: Deep psychological analysis with nuance
-4. **Speed**: 5-agent pipeline completes in ~4-5 seconds
-5. **Cost-Effective**: Affordable for consumer application
-6. **Context Window**: Handles long conversation histories
+1. **Multimodal Vision**: Understands screenshot layouts, chat bubble colors, platform UI with enhanced accuracy
+2. **Advanced Reasoning**: Superior psychological analysis with nuance and context awareness
+3. **JSON Mode**: Guaranteed structured output for pipeline data flow
+4. **Thinking Capability**: Built-in reasoning for complex manipulation pattern detection
+5. **Speed**: 5-agent pipeline completes in ~3-4 seconds (faster than 2.0)
+6. **1M Token Context**: Handles extremely long conversation histories
+7. **Cost-Effective**: Optimized for consumer applications at scale
+8. **Function Calling**: Native support for tool use and API integrations
+9. **Structured Outputs**: Reliable JSON schema adherence for data pipelines
 
 ---
 

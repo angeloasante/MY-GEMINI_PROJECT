@@ -13,6 +13,7 @@ import {
 import { ModeToggle, AppMode } from "../components/chat/mode-toggle";
 import { AuthForm, ProfileDropdown } from "../components/auth";
 import { AnalysisResult } from "@/types/agents";
+import { ItinerarySheet } from "@/components/itinerary/itinerary-sheet";
 import {
   getUserChats,
   createChat,
@@ -29,6 +30,36 @@ interface AudioData {
     character_start_times_seconds: number[];
     character_end_times_seconds: number[];
   } | null;
+}
+
+// Itinerary types
+interface ItineraryActivity {
+  time: string;
+  title: string;
+  type: "flight" | "hotel" | "restaurant" | "attraction" | "transport";
+  location: string;
+  description?: string;
+  duration?: string;
+  price?: string;
+  tips?: string[];
+  coordinates?: [number, number];
+}
+
+interface ItineraryDay {
+  day_number: number;
+  title: string;
+  date: string;
+  activities: ItineraryActivity[];
+}
+
+interface Itinerary {
+  title: string;
+  destination: string;
+  start_date: string;
+  end_date: string;
+  travel_style?: string;
+  budget_level?: string;
+  days: ItineraryDay[];
 }
 
 // Convert DB messages to component messages
@@ -90,6 +121,8 @@ export default function Home() {
   const [businessChatId, setBusinessChatId] = useState<string | null>(null);
   const [businessVoiceEnabled, setBusinessVoiceEnabled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [currentItinerary, setCurrentItinerary] = useState<Itinerary | null>(null);
+  const [isItinerarySheetOpen, setIsItinerarySheetOpen] = useState(false);
 
   // Create Supabase client only on client-side using useMemo
   const supabase = useMemo<SupabaseClient | null>(() => {
@@ -414,16 +447,31 @@ export default function Home() {
 
         const data = await response.json();
 
+        // Build response content - add "View Itinerary" button if itinerary was created
+        let responseContent = data.content;
+        if (data.hasItinerary && data.itinerary) {
+          responseContent = `${data.content}\n\n✨ **Your itinerary is ready!** Click the button below to view it with an interactive map.`;
+        }
+
         const assistantMessage: Message = {
           id: crypto.randomUUID(),
           role: "assistant",
-          content: data.content,
+          content: responseContent,
           timestamp: new Date(),
         };
 
         const finalMessages = [...updatedMessages, assistantMessage];
         setBusinessMessages(finalMessages);
         setIsLoading(false);
+
+        // If itinerary was created, store it and auto-open the sheet
+        if (data.hasItinerary && data.itinerary) {
+          setCurrentItinerary(data.itinerary as Itinerary);
+          // Small delay to let the message render first
+          setTimeout(() => {
+            setIsItinerarySheetOpen(true);
+          }, 500);
+        }
 
         // TTS if voice enabled for business mode
         if (businessVoiceEnabled) {
@@ -436,7 +484,10 @@ export default function Home() {
         if (currentChatId) {
           try {
             if (updatedMessages.length === 1) {
-              const title = await generateTitle(finalMessages);
+              // Use itinerary title if available, otherwise generate one
+              const title = data.hasItinerary && data.itinerary 
+                ? `✈️ ${data.itinerary.title || data.itinerary.destination}`
+                : await generateTitle(finalMessages);
               await updateChat(currentChatId, { title, messages: componentToDbMessages(finalMessages) });
               setChats((prev) => prev.map((c) => c.id === currentChatId ? { ...c, title, messages: componentToDbMessages(finalMessages) } : c));
             } else {
@@ -557,6 +608,144 @@ export default function Home() {
     [messages, activeChatId, voiceEnabled, user]
   );
 
+  // Handle business document/image analysis with auto-detection
+  const handleBusinessImageAnalysis = useCallback(
+    async (imageBase64: string, mimeType: string) => {
+      if (!user) return;
+      log("handleBusinessImageAnalysis called", { mimeType, imageLength: imageBase64.length });
+
+      setCurrentAudio(null);
+
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: `📄 *Sent a document for analysis*`,
+        timestamp: new Date(),
+        imageBase64,
+        mimeType,
+      };
+
+      const updatedMessages = [...businessMessages, userMessage];
+      setBusinessMessages(updatedMessages);
+
+      let currentChatId = businessChatId;
+      
+      if (!currentChatId) {
+        try {
+          const newChat = await createChat(user.id, "business", "📊 Business Analysis", componentToDbMessages(updatedMessages));
+          currentChatId = newChat.id;
+          setBusinessChatId(currentChatId);
+          setChats((prev) => [newChat, ...prev]);
+        } catch (error) {
+          console.error("Failed to create chat:", error);
+        }
+      }
+
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("/api/business-analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageData: imageBase64,
+            mimeType,
+            userId: user.id,
+            includeVoice: businessVoiceEnabled,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Analysis failed: ${errorData}`);
+        }
+
+        const result = await response.json();
+
+        // Build response content
+        let responseContent = result.response || result.synthesizedResponse?.response || "Analysis complete.";
+        
+        // Add detected type badge
+        if (result.detectedType && result.detectedType !== "unknown") {
+          const typeEmoji: Record<string, string> = {
+            visa: "🛂",
+            legal: "📝",
+            scam: "🚨",
+            trip: "✈️",
+          };
+          responseContent = `**${typeEmoji[result.detectedType] || "📊"} Auto-detected: ${result.detectedType.toUpperCase()}**\n\n${responseContent}`;
+        }
+
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: responseContent,
+          timestamp: new Date(),
+        };
+
+        const finalMessages = [...updatedMessages, assistantMessage];
+        setBusinessMessages(finalMessages);
+        setIsLoading(false);
+
+        // Update chat in database
+        if (currentChatId) {
+          try {
+            if (updatedMessages.length === 1) {
+              const typeTitle: Record<string, string> = {
+                visa: "🛂 Visa Document Analysis",
+                legal: "📝 Contract Review",
+                scam: "🚨 Scam Detection",
+                trip: "✈️ Trip Planning",
+                unknown: "📊 Document Analysis",
+              };
+              const title = typeTitle[result.detectedType] || "📊 Business Analysis";
+              await updateChat(currentChatId, { title, messages: componentToDbMessages(finalMessages) });
+              setChats((prev) => prev.map((c) => c.id === currentChatId ? { ...c, title, messages: componentToDbMessages(finalMessages) } : c));
+            } else {
+              await updateChat(currentChatId, { messages: componentToDbMessages(finalMessages) });
+            }
+          } catch (error) {
+            console.error("Failed to update chat:", error);
+          }
+        }
+
+        // TTS if enabled
+        if (businessVoiceEnabled && result.voiceResponse) {
+          const fetchTTS = async (text: string) => {
+            try {
+              const ttsResponse = await fetch("/api/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text }),
+              });
+              if (ttsResponse.ok) {
+                return await ttsResponse.json();
+              }
+            } catch {
+              console.error("TTS failed");
+            }
+            return null;
+          };
+          
+          fetchTTS(result.voiceResponse).then((audioData) => {
+            if (audioData) setCurrentAudio(audioData);
+          });
+        }
+      } catch (error) {
+        logError("Business image analysis failed:", error);
+        const errorMessage: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "😔 Sorry, I couldn't analyze that document. Please try uploading a clearer image or describe what you need help with.",
+          timestamp: new Date(),
+        };
+        setBusinessMessages((prev) => [...prev, errorMessage]);
+        setIsLoading(false);
+      }
+    },
+    [businessMessages, businessChatId, businessVoiceEnabled, user]
+  );
+
   // Mode change handler - preserve messages when switching
   const handleModeChange = useCallback((newMode: AppMode) => {
     setAppMode(newMode);
@@ -625,17 +814,28 @@ export default function Home() {
               isLoading={isLoading}
               isSpeaking={isSpeaking}
               mode="business"
+              onViewItinerary={currentItinerary ? () => setIsItinerarySheetOpen(true) : undefined}
             />
             <ChatInput
               onSendMessage={handleBusinessMessage}
+              onSendImage={handleBusinessImageAnalysis}
               isLoading={isLoading}
-              placeholder="Ask about business, visa requirements, travel..."
+              placeholder="Upload a document or ask about visas, contracts, trips..."
               voiceEnabled={businessVoiceEnabled}
               onToggleVoice={() => setBusinessVoiceEnabled((prev) => !prev)}
             />
           </>
         )}
       </main>
+
+      {/* Itinerary Sheet */}
+      {currentItinerary && (
+        <ItinerarySheet
+          isOpen={isItinerarySheetOpen}
+          onClose={() => setIsItinerarySheetOpen(false)}
+          itinerary={currentItinerary}
+        />
+      )}
     </div>
   );
 }

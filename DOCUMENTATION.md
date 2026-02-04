@@ -62,7 +62,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                   MULTI-AGENT ORCHESTRATOR                       │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │              AUTO MODE DETECTION (Gemini 2.0)            │   │
+│  │        AUTO MODE DETECTION (Gemini 3 Flash Preview)      │   │
 │  │         Determines: relationship | scam | self           │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │         │                                                        │
@@ -94,7 +94,7 @@
 
 ## 🤖 Multi-Agent Pipeline
 
-The system uses **5 specialized AI agents**, each powered by **Gemini 2.0 Flash**, working in sequence:
+The system uses **5 specialized AI agents**, each powered by **Gemini 3 Flash Preview** (`gemini-3-flash-preview`), working in sequence:
 
 ### Agent 1: The Extractor ("The Eyes")
 **File:** `lib/agents/extractor.ts`
@@ -571,15 +571,24 @@ components/chat/
 ## 🔐 Environment Variables
 
 ```env
-# Required
+# Required - AI
 GEMINI_API_KEY=your_gemini_api_key
+
+# Optional - Voice
 ELEVENLABS_API_KEY=your_elevenlabs_key
 ELEVENLABS_VOICE_ID=voice_id
 
-# Supabase
+# Required - Database & Auth
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=public_anon_key
 SUPABASE_SERVICE_ROLE_KEY=service_role_key
+
+# Required - Maps (for Business Mode Itinerary)
+GOOGLE_MAPS_API_KEY=your_server_side_maps_key
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_client_side_maps_key
+
+# Optional - Business Mode
+DIASPORA_AI_VISA_API_KEY=your_diaspora_visa_key
 ```
 
 ---
@@ -591,10 +600,14 @@ SUPABASE_SERVICE_ROLE_KEY=service_role_key
 | **Framework** | Next.js | 16.1.6 |
 | **Runtime** | React | 19.2.3 |
 | **Language** | TypeScript | 5.x |
-| **AI Model** | Gemini 2.0 Flash | Latest |
+| **AI Model** | Gemini 3 Flash Preview | `gemini-3-flash-preview` |
 | **TTS** | ElevenLabs | eleven_turbo_v2_5 |
 | **Database** | Supabase (PostgreSQL) | Latest |
+| **Authentication** | Supabase Auth | Email + GitHub OAuth |
+| **Maps** | Google Maps API | @react-google-maps/api |
+| **Places** | Google Places API | Server-side enrichment |
 | **Styling** | Tailwind CSS | 4.x |
+| **Animations** | Framer Motion | Latest |
 | **Deployment** | Vercel | - |
 
 ---
@@ -674,25 +687,160 @@ The application now supports a **Business Mode** alongside the Personal (manipul
 |---------|-------------|
 | **Mode Toggle** | Switch between Personal and Business modes instantly |
 | **Separate Chat Histories** | Each mode maintains its own chat history |
-| **Business Assistant** | Powered by Gemini 3 for professional queries |
+| **Business Assistant** | Powered by Gemini 3 Flash Preview for professional queries |
 | **Voice Responses** | TTS support with animated avatar |
 | **Diaspora AI Visa API** | Real-time visa requirement checks |
+| **AI Itinerary Generation** | Automatic travel itinerary creation with Google Maps |
+
+### Business Mode Specialized Agents
+
+| Agent | Endpoint | Purpose |
+|-------|----------|---------|
+| **VisaLens** | `/api/business/visa` | Visa requirements and immigration guidance |
+| **LegalLens** | `/api/business/legal` | Legal document analysis and advice |
+| **ScamShield** | `/api/business/scam` | Business fraud and scam detection |
+| **TripGuard** | `/api/business/trip` | Travel safety and itinerary planning |
 
 ### Business Mode API Endpoint
 
 **`POST /api/business-chat`**
 
+The business chat endpoint automatically detects itinerary requests and generates comprehensive travel plans.
+
 ```typescript
 // Request
 {
   messages: [
-    { role: "user", content: "What visa do I need to travel from Ghana to Canada?" }
+    { role: "user", content: "Plan a 5-day trip to Rome, Italy" }
   ]
 }
 
-// Response
+// Response (with itinerary)
 {
-  content: "For traveling from Ghana to Canada, you will need..."
+  content: "I've created your 5-day Rome itinerary! ...",
+  hasItinerary: true,
+  itinerary: {
+    type: "itinerary",
+    title: "5-Day Rome Adventure",
+    destination: "Rome, Italy",
+    start_date: "2026-03-01",
+    end_date: "2026-03-05",
+    travel_style: "cultural",
+    budget_level: "mid-range",
+    days: [
+      {
+        day_number: 1,
+        title: "Ancient Rome",
+        date: "2026-03-01",
+        activities: [
+          {
+            time: "09:00 AM",
+            title: "Colosseum",
+            type: "attraction",
+            location: "Piazza del Colosseo, Rome",
+            description: "Explore the iconic amphitheater",
+            latitude: 41.8902,
+            longitude: 12.4922,
+            rating: 4.7,
+            photos: ["https://..."],
+            website: "https://..."
+          }
+          // ... more activities
+        ]
+      }
+      // ... more days
+    ]
+  }
+}
+```
+
+---
+
+## 🗺️ Itinerary & Google Maps Integration
+
+### Overview
+Business Mode includes AI-powered itinerary generation with full Google Maps integration. When users request trip planning, the system:
+
+1. **Detects** itinerary requests via Gemini 3 Flash
+2. **Generates** structured JSON itinerary with activities
+3. **Enriches** each activity with Google Places API data
+4. **Displays** interactive map with markers and routes
+
+### Itinerary Detection Triggers
+
+The AI detects these phrases as itinerary requests:
+- "plan a trip to..."
+- "create an itinerary for..."
+- "I want to visit..."
+- "help me plan..."
+- "travel to..."
+- "vacation in..."
+- "going to [destination]..."
+
+### Google Places Enrichment
+
+**File:** `lib/itinerary/places.ts`
+
+Each activity is enriched with:
+- 📍 **Coordinates** (latitude/longitude for map markers)
+- ⭐ **Ratings** and review counts
+- 📷 **Photos** (up to 3 per location)
+- ⏰ **Opening hours** and "open now" status
+- 📞 **Phone number** and website
+- 🗺️ **Google Maps URL** for directions
+- 💰 **Price level** ($ to $$$$)
+- 📝 **Editorial summary** from Google
+
+### Itinerary Sheet Component
+
+**File:** `components/itinerary/itinerary-sheet.tsx`
+
+A slide-up sheet displays the itinerary with:
+
+| Feature | Description |
+|---------|-------------|
+| **Day Tabs** | Navigate between trip days |
+| **Activity Timeline** | Chronological list with type icons |
+| **Google Map** | Interactive map with dark mode styling |
+| **Markers** | Color-coded by activity type (hotel, restaurant, attraction, etc.) |
+| **Directions** | Driving route between activities |
+| **Info Windows** | Click markers to see place details |
+| **Fit Bounds** | Auto-zoom to show all activities |
+
+### Activity Types & Icons
+
+| Type | Icon | Marker Color |
+|------|------|--------------|
+| `flight` | ✈️ | Blue |
+| `hotel` | 🏨 | Purple |
+| `restaurant` | 🍽️ | Amber |
+| `attraction` | 🏛️ | Emerald |
+| `transport` | 🚕 | Indigo |
+
+### Places API Interface
+
+```typescript
+interface EnrichedActivity {
+  title: string;
+  type: "flight" | "hotel" | "restaurant" | "attraction" | "transport" | "other";
+  location?: string;
+  description?: string;
+  time?: string;
+  price?: string;
+  latitude: number;
+  longitude: number;
+  // Enriched from Google Places
+  placeId?: string;
+  rating?: number;
+  userRatingsTotal?: number;
+  priceLevel?: number;
+  photos?: string[];
+  openNow?: boolean;
+  openingHours?: string[];
+  website?: string;
+  phoneNumber?: string;
+  googleMapsUrl?: string;
+  editorialSummary?: string;
 }
 ```
 

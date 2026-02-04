@@ -11,9 +11,10 @@ interface ChatMessagesProps {
   isLoading?: boolean;
   isSpeaking?: boolean;
   mode?: AppMode;
+  onViewItinerary?: () => void;
 }
 
-export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "personal" }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "personal", onViewItinerary }: ChatMessagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,11 +100,28 @@ export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "
             index === messages.length - 1;
           
           return (
-            <ChatMessage 
-              key={message.id} 
-              message={message}
-              isSpeaking={isLastAssistantMessage ? isSpeaking : false}
-            />
+            <div key={message.id}>
+              <ChatMessage 
+                message={message}
+                isSpeaking={isLastAssistantMessage ? isSpeaking : false}
+              />
+              {/* Show View Itinerary button after the last assistant message if itinerary is available */}
+              {isLastAssistantMessage && onViewItinerary && message.content.includes("itinerary is ready") && (
+                <div className="flex gap-3 mt-2 ml-13">
+                  <div className="w-10 shrink-0" /> {/* Spacer for avatar alignment */}
+                  <button
+                    type="button"
+                    onClick={onViewItinerary}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium text-sm hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    View Itinerary & Map
+                  </button>
+                </div>
+              )}
+            </div>
           );
         })}
         {isLoading && (
