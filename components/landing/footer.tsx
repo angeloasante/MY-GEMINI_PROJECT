@@ -120,7 +120,7 @@ export function Footer() {
                   href="#"
                   className="text-sm text-neutral-400 hover:text-white transition-colors font-light"
                 >
-                  Scam Database
+                detectScam Database
                 </a>
               </li>
               <li>

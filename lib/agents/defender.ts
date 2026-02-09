@@ -130,7 +130,7 @@ export async function generateDefenses(
 
   const prompt = getPromptForMode(mode);
 
-  const tacticsSummary = classification.tactics  ed
+  const tacticsSummary = classification.tacticsDetected
     .map(t => `- ${t.tacticName}: "${t.evidenceQuotes[0] || 'N/A'}" (${t.severity})`)
     .join('\n');
 
@@ -145,8 +145,8 @@ export async function generateDefenses(
 CONVERSATION:
 ${conversationText}
 
-  ED TACTICS:
-${tacticsSummary || 'No specific tactics   ed'}
+DETECTED TACTICS:
+${tacticsSummary || 'No specific tactics detected'}
 
 THREAT LEVEL: ${classification.overallThreatLevel}
 HEALTH SCORE: ${psychology.relationshipHealthScore}/100

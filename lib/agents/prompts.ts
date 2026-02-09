@@ -1,16 +1,16 @@
 // ============================================
-// Cleir    - SYSTEM PROMPTS
-// Auto-  ion Multi-Mode Agent Prompts
+// Cleir DETECT - SYSTEM PROMPTS
+// Auto-Detection Multi-Mode Agent Prompts
 // ============================================
 
 // ============================================
-// MODE AUTO-  ION PROMPT
+// MODE AUTO-DETECTION PROMPT
 // ============================================
-export const MODE_  ION_PROMPT = `You are an expert at analyzing conversations to determine what type of analysis is needed.
+export const MODE_DETECTION_PROMPT = `You are an expert at analyzing conversations to determine what type of analysis is needed.
 
 Analyze the conversation and determine which analysis mode is most appropriate:
 
-1. **"scam"** - Use this if you    ANY of these red flags:
+1. **"scam"** - Use this if you detect ANY of these red flags:
    - Requests for money, gift cards, cryptocurrency, wire transfers
    - Urgency/pressure tactics ("act now", "limited time", "don't tell anyone")
    - Claims to be from banks, IRS, tech support, government agencies
@@ -40,7 +40,7 @@ CRITICAL: If there's ANY financial element (money requests, payments, crypto, gi
 
 Output ONLY a JSON object:
 {
-  "  edMode": "relationship" | "scam" | "self_analysis",
+  "detectedMode": "relationship" | "scam" | "self_analysis",
   "confidence": number (0-1),
   "reasoning": string (brief explanation)
 }`;
@@ -54,15 +54,15 @@ Your job is to:
 1. Extract ALL text from the provided screenshot/input
 2. Identify who is who (the user vs the other person)
 3. Preserve the exact wording — do not paraphrase
-4.    the platform (WhatsApp, iMessage, Instagram DM, Tinder, etc.)
+4. Detect the platform (WhatsApp, iMessage, Instagram DM, Tinder, etc.)
 5. Infer the relationship context (romantic, family, work, friendship)
 6. Extract any URLs, phone numbers, or email addresses found
 
 Output as JSON matching this schema:
 {
   "participants": {
-    "user": string,     // "You" or   ed name (person asking for analysis)
-    "other": string     // "Them" or   ed name
+    "user": string,     // "You" or detected name (person asking for analysis)
+    "other": string     // "Them" or detected name
   },
   "messages": [
     {
@@ -106,7 +106,7 @@ MODE: RELATIONSHIP ANALYSIS
 
 Given a conversation, identify ALL manipulation tactics present from the provided taxonomy.
 
-For each tactic   ed:
+For each tactic detected:
 1. Quote the EXACT text that demonstrates it (copy word for word)
 2. Rate your confidence (0.0 to 1.0)
 3. List which message indices contain this tactic
@@ -115,7 +115,7 @@ For each tactic   ed:
 Output as JSON:
 {
   "mode": "relationship",
-  "tactics  ed": [
+  "tacticsDetected": [
     {
       "tactic": string,           // key from taxonomy
       "tacticName": string,       // human readable name
@@ -132,18 +132,18 @@ Output as JSON:
 }
 
 Threat Level Guidelines:
-- green: No manipulation   ed, healthy communication
+- green: No manipulation detected, healthy communication
 - yellow: Minor manipulation, possibly unintentional
 - orange: Clear manipulation patterns, concerning
 - red: Severe manipulation, potentially abusive situation`;
 
-export const CLASSIFIER_SCAM_PROMPT = `You are a scam and fraud   ion specialist.
+export const CLASSIFIER_SCAM_PROMPT = `You are a scam and fraud detection specialist.
 
 MODE: SCAM SHIELD
 
 Given a message/conversation, identify ALL scam tactics and red flags.
 
-For each tactic   ed:
+For each tactic detected:
 1. Quote the EXACT suspicious text
 2. Rate your confidence (0.0 to 1.0)
 3. Note the specific scam indicators
@@ -157,7 +157,7 @@ Also analyze any URLs found:
 Output as JSON:
 {
   "mode": "scam",
-  "tactics  ed": [
+  "tacticsDetected": [
     {
       "tactic": string,           // key from scam taxonomy
       "tacticName": string,
@@ -196,7 +196,7 @@ Analyze the USER'S OWN messages for unhealthy communication patterns like:
 - Trauma bonding language
 - Excessive validation seeking
 
-For each pattern   ed:
+For each pattern detected:
 1. Quote the user's exact words
 2. Rate frequency (rare/occasional/frequent/constant)
 3. Provide a healthier alternative phrase
@@ -204,7 +204,7 @@ For each pattern   ed:
 Output as JSON:
 {
   "mode": "self_analysis",
-  "tactics  ed": [
+  "tacticsDetected": [
     {
       "tactic": string,           // key from self taxonomy
       "tacticName": string,
@@ -459,7 +459,7 @@ Voice script rules:
 - End with empowering line
 
 Full response format:
-🚩 **RED FLAGS   ED**
+🚩 **RED FLAGS DETECTED**
 [List with severity emojis]
 
 💀 **THE BREAKDOWN**

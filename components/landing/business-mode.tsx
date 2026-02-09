@@ -99,7 +99,7 @@ export function BusinessMode() {
             </div>
             <div>
               <h3 className="text-xl font-medium text-white mb-2">
-                ScamShield
+              detectScamShield
               </h3>
               <p className="text-sm text-neutral-400 font-light leading-relaxed mb-4">
                 Verify vendors, partners, and suppliers against global fraud

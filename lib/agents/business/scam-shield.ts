@@ -1,17 +1,17 @@
 // ============================================
-// B2B SCAMSHIELD AGENT - Business Fraud   ion
+// B2B SCAMSHIELD AGENT - Business Fraud Detection
 //   s scams in business emails and invoices
 // ============================================
 
 import { GoogleGenAI } from "@google/genai";
 import {
-  ScamShieldInput,
-  ScamShieldOutput,
+ScamShieldInput,
+ScamShieldOutput,
   RedFlag,
   VerificationResult,
-  ScamPatternType,
+ScamPatternType,
   SuspiciousPaymentMethod,
-  ScamLikelihood,
+ScamLikelihood,
 } from "@/types/business";
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
@@ -102,7 +102,7 @@ export const SCAM_PATTERNS: Record<ScamPatternType, {
     severity: "high",
     description: "Pretending to be regulatory body demanding payment",
     indicators: ["Government impersonation", "Threatening legal action", "Unusual payment methods"],
-    typicalPhrases: ["Pay the fine immediately", "Your business license will be revoked", "Compliance violation   ed"],
+    typicalPhrases: ["Pay the fine immediately", "Your business license will be revoked", "Compliance violation Detected"],
   },
   supply_chain_attack: {
     name: "Supply Chain Attack",
@@ -114,10 +114,10 @@ export const SCAM_PATTERNS: Record<ScamPatternType, {
 };
 
 // ============================================
-// SCAM   ION PROMPT
+// SCAM DETECTION PROMPT
 // ============================================
 
-const SCAM_  ION_PROMPT = `You are a cybersecurity expert specializing in business email compromise (BEC) and B2B fraud   ion. Analyze this content for scam indicators.
+const SCAM_DETECTION_PROMPT = `You are a cybersecurity expert specializing in business email compromise (BEC) and B2B fraud Detection. Analyze this content for scam indicators.
 
 Look for these scam patterns:
 1. CEO_FRAUD: Fake executive requesting wire transfer, secrecy demanded
@@ -221,7 +221,7 @@ async function verifyDomain(domain: string): Promise<Partial<VerificationResult>
 // MAIN SCAM SHIELD FUNCTION
 // ============================================
 
-export async function   Scam(
+export async function detectScam(
   input: ScamShieldInput
 ): Promise<ScamShieldOutput> {
   console.log("[ScamShield] Starting fraud analysis...");
@@ -256,7 +256,7 @@ ${contentToAnalyze}
       {
         role: "user",
         parts: [
-          { text: SCAM_  ION_PROMPT },
+          { text: SCAM_DETECTION_PROMPT },
           { text: context },
         ],
       },
@@ -441,7 +441,7 @@ function formatScamShieldResponse(
   const verdictSection = `
 **Verdict:** ${likelihoodText}
 **Confidence:** ${Math.round(confidence * 100)}%
-**Red Flags   ed:** ${redFlags.length}
+**Red Flags Detected:** ${redFlags.length}
 ${urgencyTactics.length > 0 ? `**Urgency Tactics:** ${urgencyTactics.join(", ")}` : ""}
 ${suspiciousPayments.length > 0 ? `**⚠️ Suspicious Payment Methods:** ${suspiciousPayments.map(p => p.replace(/_/g, " ")).join(", ")}` : ""}
 `.trim();
@@ -452,7 +452,7 @@ ${suspiciousPayments.length > 0 ? `**⚠️ Suspicious Payment Methods:** ${susp
                              rf.severity === "high" ? "🟠" : "🟡";
         return `${severityEmoji} **${rf.flagName}** (${rf.severity})\n   Evidence: "${rf.evidence}"`;
       }).join("\n\n")
-    : "No specific scam patterns   ed.";
+    : "No specific scam patterns Detected.";
 
   const verificationSection = `
 **Domain Verification:**

@@ -1,6 +1,6 @@
 // API Route: /api/analyze
 // Main endpoint for the multi-agent screenshot analysis pipeline
-// Supports AUTO MODE   ION - no need to specify mode
+// Supports AUTO MODE DETECTION - no need to specify mode
 
 import { NextRequest, NextResponse } from "next/server";
 import { runAnalysisPipeline } from "@/lib/agents/orchestrator";
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       imageData, 
       conversationText, 
       mimeType,
-      mode, // Optional - will be auto-  ed if not provided
+      mode, // Optional - will be auto-Detected if not provided
       userId,
       saveToDatabase = true 
     } = body;
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (mode && !validModes.includes(mode)) {
       logError("Invalid mode:", mode);
       return NextResponse.json(
-        { error: `Invalid mode. Must be one of: ${validModes.join(', ')} (or omit for auto-  ion)` },
+        { error: `Invalid mode. Must be one of: ${validModes.join(', ')} (or omit for auto-Detection)` },
         { status: 400 }
       );
     }
@@ -75,23 +75,23 @@ export async function POST(request: NextRequest) {
     };
 
     // Run the full multi-agent analysis pipeline
-    // forceMode is optional - if not provided, mode will be auto-  ed
+    // forceMode is optional - if not provided, mode will be auto-Detected
     const startTime = Date.now();
     const result = await runAnalysisPipeline(agentInput, {
       saveToDatabase,
       userId: userId || 'anonymous',
-      forceMode: mode as AnalysisMode | undefined, // undefined triggers auto-  ion
+      forceMode: mode as AnalysisMode | undefined, // undefined triggers auto-Detection
     });
     const totalTime = Date.now() - startTime;
 
     log(`Analysis complete in ${totalTime}ms`);
-    log(`Mode: ${result.mode} ${result.metadata.mode  ion?.wasAuto  ed ? '(auto-  ed)' : '(manual)'}`);
-    if (result.metadata.mode  ion) {
-      log(`Mode Confidence: ${(result.metadata.mode  ion.confidence * 100).toFixed(0)}%`);
-      log(`Mode Reasoning: ${result.metadata.mode  ion.reasoning}`);
+    log(`Mode: ${result.mode} ${result.metadata.modeDetection?.wasAutoDetected ? '(auto-Detected)' : '(manual)'}`);
+    if (result.metadata.modeDetection) {
+      log(`Mode Confidence: ${(result.metadata.modeDetection.confidence * 100).toFixed(0)}%`);
+      log(`Mode Reasoning: ${result.metadata.modeDetection.reasoning}`);
     }
     log(`Threat Level: ${result.classification.overallThreatLevel}`);
-    log(`Tactics Found: ${result.classification.tactics  ed.length}`);
+    log(`Tactics Found: ${result.classification.tacticsDetected.length}`);
     log(`Health Score: ${result.psychology.relationshipHealthScore}/100`);
     log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 

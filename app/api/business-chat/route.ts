@@ -16,7 +16,7 @@ const BUSINESS_SYSTEM_PROMPT = `You are a professional business assistant powere
 5. Professional communication drafting
 6. Business planning and strategy
 
-## CRITICAL: Itinerary   ion & Format
+## CRITICAL: Itinerary Detection & Format
 
 When a user asks you to plan a trip, create an itinerary, or help with travel plans, you MUST:
 1. First respond conversationally acknowledging their request
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     const itineraryResult = extractItineraryJson(text);
     
     if (itineraryResult) {
-      log("Itinerary   ed, enriching with Places API...");
+      log("Itinerary Detected, enriching with Places API...");
       
       try {
         // Type-cast the itinerary to access its properties

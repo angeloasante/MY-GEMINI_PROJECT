@@ -653,7 +653,7 @@ export default function Home() {
     [messages, activeChatId, voiceEnabled, user]
   );
 
-  // Handle business document/image analysis with auto-  ion
+  // Handle business document/image analysis with auto-Detection
   const handleBusinessImageAnalysis = useCallback(
     async (imageBase64: string, mimeType: string) => {
       if (!user) return;
@@ -710,15 +710,15 @@ export default function Home() {
         // Build response content
         let responseContent = result.response || result.synthesizedResponse?.response || "Analysis complete.";
         
-        // Add   ed type badge
-        if (result.  edType && result.  edType !== "unknown") {
+        // Add detected type badge
+        if (result.detectedType && result.detectedType !== "unknown") {
           const typeEmoji: Record<string, string> = {
             visa: "🛂",
             legal: "📝",
             scam: "🚨",
             trip: "✈️",
           };
-          responseContent = `**${typeEmoji[result.  edType] || "📊"} Auto-  ed: ${result.  edType.toUpperCase()}**\n\n${responseContent}`;
+          responseContent = `**${typeEmoji[result.detectedType] || "📊"} Auto-Detected: ${result.detectedType.toUpperCase()}**\n\n${responseContent}`;
         }
 
         const assistantMessage: Message = {
@@ -739,11 +739,11 @@ export default function Home() {
               const typeTitle: Record<string, string> = {
                 visa: "🛂 Visa Document Analysis",
                 legal: "📝 Contract Review",
-                scam: "🚨 Scam   ion",
+                scam: "🚨 Scam Detection",
                 trip: "✈️ Trip Planning",
                 unknown: "📊 Document Analysis",
               };
-              const title = typeTitle[result.  edType] || "📊 Business Analysis";
+              const title = typeTitle[result.detectedType] || "📊 Business Analysis";
               await updateChat(currentChatId, { title, messages: componentToDbMessages(finalMessages) });
               setChats((prev) => prev.map((c) => c.id === currentChatId ? { ...c, title, messages: componentToDbMessages(finalMessages) } : c));
             } else {

@@ -1,25 +1,25 @@
 // ============================================
 // AGENT 1: THE EXTRACTOR ("The Eyes")
 // Extracts and structures conversation data
-// Also handles automatic mode   ion
+// Also handles automatic mode detection
 // ============================================
 
 import { GoogleGenerativeAI, Part } from '@google/generative-ai';
 import { AgentInput, ExtractedConversation, AnalysisMode } from '@/types/agents';
-import { EXTRACTOR_PROMPT, EXTRACTOR_SELF_ANALYSIS_PROMPT, MODE_  ION_PROMPT } from './prompts';
+import { EXTRACTOR_PROMPT, EXTRACTOR_SELF_ANALYSIS_PROMPT, MODE_DETECTION_PROMPT } from './prompts';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 // ============================================
-// AUTO MODE   ION
+// AUTO MODE DETECTION
 // ============================================
-interface Mode  ionResult {
-    edMode: AnalysisMode;
+interface ModeDetectionResult {
+  detectedMode: AnalysisMode;
   confidence: number;
   reasoning: string;
 }
 
-export async function   AnalysisMode(input: AgentInput): Promise<Mode  ionResult> {
+export async function detectAnalysisMode(input: AgentInput): Promise<ModeDetectionResult> {
   const model = genAI.getGenerativeModel({
     model: 'gemini-3-flash-preview',
     generationConfig: {
@@ -38,15 +38,15 @@ export async function   AnalysisMode(input: AgentInput): Promise<Mode  ionResult
         data: input.imageData,
       },
     });
-    parts.push({ text: `${MODE_  ION_PROMPT}\n\nAnalyze this conversation screenshot and determine the appropriate analysis mode.` });
+    parts.push({ text: `${MODE_DETECTION_PROMPT}\n\nAnalyze this conversation screenshot and determine the appropriate analysis mode.` });
   } else if (input.conversationText) {
     parts.push({
-      text: `${MODE_  ION_PROMPT}\n\nAnalyze this conversation and determine the appropriate analysis mode:\n\n${input.conversationText}`,
+      text: `${MODE_DETECTION_PROMPT}\n\nAnalyze this conversation and determine the appropriate analysis mode:\n\n${input.conversationText}`,
     });
   } else {
     // Default to relationship if no input
     return {
-        edMode: 'relationship',
+      detectedMode: 'relationship',
       confidence: 0.5,
       reasoning: 'No input provided, defaulting to relationship analysis',
     };
@@ -57,7 +57,7 @@ export async function   AnalysisMode(input: AgentInput): Promise<Mode  ionResult
     const response = result.response;
     const text = response.text();
 
-    let parsed: Mode  ionResult;
+    let parsed: ModeDetectionResult;
     try {
       parsed = JSON.parse(text);
     } catch {
@@ -67,31 +67,31 @@ export async function   AnalysisMode(input: AgentInput): Promise<Mode  ionResult
       } else {
         // Default fallback
         return {
-            edMode: 'relationship',
+          detectedMode: 'relationship',
           confidence: 0.5,
-          reasoning: 'Failed to parse mode   ion response, defaulting to relationship',
+          reasoning: 'Failed to parse mode detection response, defaulting to relationship',
         };
       }
     }
 
-    // Validate the   ed mode
+    // Validate the detected mode
     const validModes: AnalysisMode[] = ['relationship', 'scam', 'self_analysis'];
-    if (!validModes.includes(parsed.  edMode)) {
-      parsed.  edMode = 'relationship';
+    if (!validModes.includes(parsed.detectedMode)) {
+      parsed.detectedMode = 'relationship';
     }
 
     return {
-        edMode: parsed.  edMode,
+      detectedMode: parsed.detectedMode,
       confidence: parsed.confidence || 0.8,
-      reasoning: parsed.reasoning || 'Mode   ed based on content analysis',
+      reasoning: parsed.reasoning || 'Mode detected based on content analysis',
     };
   } catch (error) {
-    console.error('Mode   ion error:', error);
+    console.error('Mode detection error:', error);
     // Return default mode on error
     return {
-        edMode: 'relationship',
+      detectedMode: 'relationship',
       confidence: 0.5,
-      reasoning: `Mode   ion failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      reasoning: `Mode detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
@@ -168,8 +168,8 @@ export async function extractConversation(input: AgentInput): Promise<ExtractedC
   }
 }
 
-// Utility function to    contact info from text
-export function   ContactInfo(text: string): {
+// Utility function to detect contact info from text
+export function detectContactInfo(text: string): {
   urls: string[];
   phones: string[];
   emails: string[];

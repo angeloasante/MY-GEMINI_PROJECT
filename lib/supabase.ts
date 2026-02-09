@@ -102,9 +102,9 @@ export interface SaveTacticParams {
   message_indices?: number[];
 }
 
-export async function save  edTactic(params: SaveTacticParams) {
+export async function saveDetectedTactic(params: SaveTacticParams) {
   const { data, error } = await supabaseAdmin
-    .from("  ed_tactics")
+    .from("detected_tactics")
     .insert({
       session_id: params.session_id,
       tactic_key: params.tactic_key,
@@ -132,7 +132,7 @@ export interface SaveHealthScoreParams {
   score: number;
   threat_level: string;
   mode?: string;
-  tactics_  ed?: string[];
+  tactics_detected?: string[];
 }
 
 export async function saveHealthScore(params: SaveHealthScoreParams) {
@@ -144,7 +144,7 @@ export async function saveHealthScore(params: SaveHealthScoreParams) {
       score: params.score,
       threat_level: params.threat_level,
       mode: params.mode,
-      tactics_  ed: params.tactics_  ed,
+      tactics_detected: params.tactics_detected,
     });
 
   if (error) {
@@ -265,7 +265,7 @@ export async function getSessionDetails(sessionId: string) {
     .from("analysis_sessions")
     .select(`
       *,
-        ed_tactics (*),
+      detected_tactics (*),
       conversation_messages (*)
     `)
     .eq("id", sessionId)
@@ -281,7 +281,7 @@ export async function getSessionDetails(sessionId: string) {
 
 export async function getTacticStats(userId: string) {
   const { data, error } = await supabaseAdmin
-    .from("  ed_tactics")
+    .from("detected_tactics")
     .select(`
       tactic_key,
       tactic_name,

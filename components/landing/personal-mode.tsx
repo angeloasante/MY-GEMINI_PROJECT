@@ -103,7 +103,7 @@ export function PersonalMode() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <h3 className="text-lg font-medium text-white mb-2">
-            Scam Protection
+          detectScam Protection
           </h3>
           <p className="text-sm text-neutral-400 font-light leading-relaxed">
             Detect phishing attempts, romance scams, and social engineering

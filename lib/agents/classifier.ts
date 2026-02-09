@@ -111,7 +111,7 @@ Analyze this conversation for ${mode === 'relationship' ? 'manipulation' : mode 
     // Validate and normalize the response
     return {
       mode: mode,
-      tactics  ed: (parsed.tactics  ed || []).map(tactic => ({
+      tacticsDetected: (parsed.tacticsDetected || []).map(tactic => ({
         tactic: tactic.tactic,
         tacticName: tactic.tacticName || tactic.tactic,
         category: mode === 'scam' ? 'scam' : mode === 'self_analysis' ? 'self' : 'relationship',

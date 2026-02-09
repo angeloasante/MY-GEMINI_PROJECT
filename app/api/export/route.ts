@@ -31,7 +31,7 @@ function generateExportHTML(session: {
   psychology_data?: any;
   defense_data?: any;
   guardian_response?: any;
-    ed_tactics: Array<{
+  Detected_tactics: Array<{
     tactic_name: string;
     severity: string;
     confidence: number;
@@ -50,7 +50,7 @@ function generateExportHTML(session: {
   const threatColors: Record<string, string> = {
     green: '#22c55e',
     yellow: '#eab308',
-    orange: '#f97316',
+  Detectorange: '#f97316',
     red: '#ef4444',
   };
 
@@ -241,7 +241,7 @@ function generateExportHTML(session: {
 <body>
   <div class="header">
     <div class="logo">🛡️ Cleir   </div>
-    <div class="subtitle">AI-Powered Manipulation   ion Report</div>
+    <div class="subtitle">AI-Powered Manipulation Detection Report</div>
     <p style="margin-top: 8px; color: #9ca3af; font-size: 12px;">${date}</p>
   </div>
 
@@ -257,7 +257,7 @@ function generateExportHTML(session: {
       </div>
       <div class="stat">
         <div class="stat-value">${session.tactics_count}</div>
-        <div class="stat-label">Tactics   ed</div>
+        <div class="stat-label">Tactics Detected</div>
       </div>
       <div class="stat">
         <div class="stat-value">${session.platform || 'N/A'}</div>
@@ -275,9 +275,9 @@ function generateExportHTML(session: {
   <p style="font-size: 18px; font-weight: 500;">${result.guardian.summaryHeadline}</p>
   ` : ''}
 
-  ${session.  ed_tactics && session.  ed_tactics.length > 0 ? `
-  <h2>🚩   ed Manipulation Tactics</h2>
-  ${session.  ed_tactics.map(t => `
+  ${session.Detected_tactics && session.Detected_tactics.length > 0 ? `
+  <h2>🚩 Detected Manipulation Tactics</h2>
+  ${session.Detected_tactics.map(t => `
     <div class="tactic">
       <div class="tactic-header">
         <span>${t.tactic_name}</span>

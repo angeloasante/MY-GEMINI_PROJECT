@@ -1,11 +1,11 @@
 // ============================================
-// SCAM   ION API ROUTE
+// SCAM DETECTION API ROUTE
 // ============================================
 // POST /api/business/scam
 // Analyzes business communications for fraud indicators
 
 import { NextRequest, NextResponse } from "next/server";
-import {   Scam, SCAM_PATTERNS } from "@/lib/agents/business";
+import { detectScam, SCAM_PATTERNS } from "@/lib/agents/business";
 import { createClient } from "@supabase/supabase-js";
 import type { ScamShieldInput, ScamShieldOutput } from "@/types/business";
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
     
     //    scam
-    const result: ScamShieldOutput = await   Scam(input);
+    const result: ScamShieldOutput = await detectScam(input);
     
     // Save to database if user is logged in
     if (userId) {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           risk_score: result.riskScore,
           risk_level: result.riskLevel,
           analysis: result.analysis,
-            ed_patterns: result.  edPatterns,
+          detected_patterns: result.detectedPatterns,
           domain_verification: result.domainVerification,
           recommended_actions: result.recommendedActions,
           safe_alternatives: result.safeAlternatives,
@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
         .single();
       
       if (!reportError && report) {
-        // Link   ed patterns to scam_patterns table
-        for (const pattern of result.  edPatterns || []) {
+        // Link Detected patterns to scam_patterns table
+        for (const pattern of result.detectedPatterns || []) {
           const { data: patternRecord } = await supabase
             .from("scam_patterns")
             .select("id")

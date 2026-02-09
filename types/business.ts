@@ -1,5 +1,5 @@
 // ============================================
-// Cleir    - BUSINESS MODE TYPES
+// Cleir DETECT - BUSINESS MODE TYPES
 // TypeScript definitions for all business agents
 // ============================================
 
@@ -264,7 +264,7 @@ export interface LegalLensOutput {
 }
 
 // ============================================
-// B2B SCAMSHIELD TYPES - Business Fraud   ion
+// B2B SCAMSHIELD TYPES - Business Fraud Detection
 // ============================================
 
 export type ScamPatternType =
@@ -320,7 +320,7 @@ export interface VerificationResult {
   sslCertificate?: boolean;
 }
 
-export interface   edPattern {
+export interface DetectedPattern {
   type: ScamPatternType;
   evidence: string;
   confidence: number;
@@ -338,7 +338,7 @@ export interface ScamShieldOutput {
   confidenceScore: number;
 
   redFlags: RedFlag[];
-    edPatterns?:   edPattern[];
+  detectedPatterns?: DetectedPattern[];
 
   verification: VerificationResult;
   domainVerification?: DomainVerification;

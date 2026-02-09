@@ -252,7 +252,7 @@ export async function analyzeContract(
   const clausesAnalyzed: AnalyzedClause[] = (result.clauses || []).map((c: any) => ({
     clauseId: c.clauseId || "N/A",
     clauseName: c.clauseName || "Unknown Clause",
-    originalText: c.originalText || "",
+  DetectoriginalText: c.originalText || "",
     plainEnglish: c.plainEnglish || "No translation available",
     riskLevel: c.riskLevel || "safe",
     redFlagType: c.redFlagType as RedFlagType | undefined,
