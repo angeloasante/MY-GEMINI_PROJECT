@@ -56,7 +56,7 @@ const markdownComponents = {
   ),
   code: ({ inline, children, ...props }: any) => (
     inline ? (
-      <code className="bg-[#3a3a3a] text-teal-400 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
+      <code className="bg-[#3a3a3a] text-rose-400 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
     ) : (
       <code className="block bg-[#1a1a1a] text-gray-200 p-3 rounded-lg text-sm font-mono overflow-x-auto mb-3" {...props}>{children}</code>
     )
@@ -65,10 +65,10 @@ const markdownComponents = {
     <pre className="bg-[#1a1a1a] p-3 rounded-lg overflow-x-auto mb-3" {...props}>{children}</pre>
   ),
   blockquote: ({ children, ...props }: any) => (
-    <blockquote className="border-l-4 border-teal-500 pl-4 py-1 my-3 italic text-gray-300 bg-[#1a1a1a]/50 rounded-r" {...props}>{children}</blockquote>
+    <blockquote className="border-l-4 border-rose-500 pl-4 py-1 my-3 italic text-gray-300 bg-[#1a1a1a]/50 rounded-r" {...props}>{children}</blockquote>
   ),
   a: ({ children, href, ...props }: any) => (
-    <a href={href} className="text-teal-400 hover:text-teal-300 underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
+    <a href={href} className="text-rose-400 hover:text-rose-300 underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
   ),
   hr: () => (
     <hr className="border-t border-gray-700 my-4" />
@@ -125,7 +125,7 @@ export function ChatMessage({ message, isSpeaking = false }: ChatMessageProps) {
         <div
           className={`relative group rounded-2xl px-4 py-3 ${
             isUser
-              ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white"
+              ? "bg-gradient-to-r from-rose-500 to-orange-500 text-white"
               : isAnalysisResponse
                 ? "bg-gradient-to-br from-[#2a2a2a] to-[#1f1f1f] text-gray-100 border border-red-500/20"
                 : "bg-[#2a2a2a] text-gray-100"
@@ -162,7 +162,7 @@ export function ChatMessage({ message, isSpeaking = false }: ChatMessageProps) {
 
         {message.suggestion && (
           <div className="mt-2 bg-[#3a3a3a] rounded-2xl px-4 py-3 border border-white/10">
-            <div className="text-xs text-teal-400 mb-1 font-medium">
+            <div className="text-xs text-rose-400 mb-1 font-medium">
               I would say this...
             </div>
             <div className="text-sm text-gray-200 leading-relaxed">

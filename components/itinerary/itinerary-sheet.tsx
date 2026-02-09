@@ -328,9 +328,9 @@ export function ItinerarySheet({ isOpen, onClose, itinerary }: ItinerarySheetPro
             </div>
 
             {/* Content */}
-            <div className="flex h-[calc(100%-140px)]">
+            <div className="flex flex-col md:flex-row h-[calc(100%-140px)] overflow-hidden">
               {/* Activities List */}
-              <div className="w-96 border-r border-zinc-800 overflow-y-auto">
+              <div className="w-full md:w-96 md:border-r border-b md:border-b-0 border-zinc-800 overflow-y-auto flex-shrink-0 max-h-[50%] md:max-h-full">
                 {currentDay && (
                   <div className="p-4">
                     <h3 className="text-lg font-semibold text-white mb-1">{currentDay.title}</h3>
@@ -412,7 +412,7 @@ export function ItinerarySheet({ isOpen, onClose, itinerary }: ItinerarySheetPro
               </div>
 
               {/* Map */}
-              <div className="flex-1 relative">
+              <div className="flex-1 relative min-h-[250px] md:min-h-0">
                 {loadError ? (
                   <div className="flex items-center justify-center h-full text-red-400">
                     Failed to load map

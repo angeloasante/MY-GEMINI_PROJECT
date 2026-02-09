@@ -111,7 +111,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="p-4 bg-[#1a1a1a]">
+    <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-[#1a1a1a]">
       {/* Image Preview */}
       {imagePreview && (
         <div className="mb-3 bg-[#2a2a2a] rounded-xl p-3 flex items-center gap-3">
@@ -207,7 +207,7 @@ export function ChatInput({
           className={`w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shrink-0 ${
             imagePreview
               ? "bg-gradient-to-r from-red-500 to-pink-500"
-              : "bg-gradient-to-r from-teal-500 to-cyan-500"
+              : "bg-gradient-to-r from-rose-500 to-orange-500"
           }`}
           title={imagePreview ? "Analyze Screenshot 🚩" : "Send Message"}
         >

@@ -86,7 +86,7 @@ export interface Database {
           created_at?: string;
         };
       };
-      detected_tactics: {
+        ed_tactics: {
         Row: {
           id: string;
           session_id: string | null;
@@ -279,7 +279,7 @@ export interface Database {
           session_id: string | null;
           scam_type: string;
           sender_identifier: string | null;
-          urls_detected: string[] | null;
+          urls_  ed: string[] | null;
           is_verified: boolean | null;
           report_count: number | null;
           created_at: string;
@@ -289,7 +289,7 @@ export interface Database {
           session_id?: string | null;
           scam_type: string;
           sender_identifier?: string | null;
-          urls_detected?: string[] | null;
+          urls_  ed?: string[] | null;
           is_verified?: boolean | null;
           report_count?: number | null;
           created_at?: string;
@@ -299,7 +299,7 @@ export interface Database {
           session_id?: string | null;
           scam_type?: string;
           sender_identifier?: string | null;
-          urls_detected?: string[] | null;
+          urls_  ed?: string[] | null;
           is_verified?: boolean | null;
           report_count?: number | null;
           created_at?: string;
@@ -315,7 +315,7 @@ export interface Database {
           examples: string[] | null;
           healthier_alternatives: string[] | null;
           root_cause_explanation: string | null;
-          detected_at: string;
+            ed_at: string;
         };
         Insert: {
           id?: string;
@@ -326,7 +326,7 @@ export interface Database {
           examples?: string[] | null;
           healthier_alternatives?: string[] | null;
           root_cause_explanation?: string | null;
-          detected_at?: string;
+            ed_at?: string;
         };
         Update: {
           id?: string;
@@ -337,7 +337,7 @@ export interface Database {
           examples?: string[] | null;
           healthier_alternatives?: string[] | null;
           root_cause_explanation?: string | null;
-          detected_at?: string;
+            ed_at?: string;
         };
       };
     };

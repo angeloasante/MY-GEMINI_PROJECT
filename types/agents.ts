@@ -1,5 +1,5 @@
 // ============================================
-// GASLIGHTER DETECT - ENHANCED AGENT TYPES
+// Cleir    - ENHANCED AGENT TYPES
 // Multi-Mode Analysis System
 // ============================================
 
@@ -20,7 +20,7 @@ export const ANALYSIS_MODES: AnalysisModeConfig[] = [
   {
     mode: "relationship",
     label: "🚩 Relationship Analysis",
-    description: "Detect manipulation, gaslighting, and toxic patterns",
+    description: "   manipulation, gaslighting, and toxic patterns",
     icon: "🚩",
     taxonomy: "relationship",
   },
@@ -44,7 +44,7 @@ export const ANALYSIS_MODES: AnalysisModeConfig[] = [
 // INPUT TYPES
 // ============================================
 export interface AgentInput {
-  mode?: AnalysisMode; // Optional - will be auto-detected if not provided
+  mode?: AnalysisMode; // Optional - will be auto-  ed if not provided
   imageData?: string;
   conversationText?: string;
   mimeType?: string;
@@ -79,7 +79,7 @@ export interface ExtractedConversation {
 // ============================================
 // AGENT 2: CLASSIFIER OUTPUT
 // ============================================
-export interface TacticDetection {
+export interface Tactic  ion {
   tactic: string;
   tacticName: string;
   category: "relationship" | "scam" | "self";
@@ -107,7 +107,7 @@ export interface SelfPattern {
 
 export interface ClassificationResult {
   mode: AnalysisMode;
-  tacticsDetected: TacticDetection[];
+  tactics  ed: Tactic  ion[];
   overallThreatLevel: "green" | "yellow" | "orange" | "red";
   primaryTactic: string;
   patternType: "isolated_incident" | "recurring_pattern" | "escalating";
@@ -206,11 +206,11 @@ export interface GuardianResponse {
 // ============================================
 // FINAL ANALYSIS RESULT
 // ============================================
-export interface ModeDetectionMetadata {
-  detectedMode: AnalysisMode;
+export interface Mode  ionMetadata {
+    edMode: AnalysisMode;
   confidence: number;
   reasoning: string;
-  wasAutoDetected: boolean;
+  wasAuto  ed: boolean;
 }
 
 export interface AnalysisResult {
@@ -226,7 +226,7 @@ export interface AnalysisResult {
     processingTimeMs: number;
     agentsUsed: string[];
     modelVersion: string;
-    modeDetection?: ModeDetectionMetadata;
+    mode  ion?: Mode  ionMetadata;
   };
   // Backward compatibility
   guardianResponse?: GuardianResponse;

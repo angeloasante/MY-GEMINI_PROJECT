@@ -1,5 +1,5 @@
 // API Route: /api/business-analyze
-// Auto-detect document/image type and route to appropriate business agent
+// Auto-   document/image type and route to appropriate business agent
 // Supports: Visa documents, Contracts, Scam emails/invoices, Trip itineraries
 
 import { NextRequest, NextResponse } from "next/server";
@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
   analyzeVisaDocuments, 
   analyzeContract, 
-  detectScam, 
+    Scam, 
   planTrip,
   synthesizeBusinessResponse,
   optimizeForVoice
@@ -25,7 +25,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 type DocumentType = "visa" | "legal" | "scam" | "trip" | "unknown";
 
-interface DetectionResult {
+interface   ionResult {
   type: DocumentType;
   confidence: number;
   reasoning: string;
@@ -43,13 +43,13 @@ function logError(message: string, data?: unknown) {
   console.error(`[BUSINESS-ANALYZE ERROR ${timestamp}] ${message}`, data !== undefined ? data : "");
 }
 
-// Auto-detect document type using Gemini Vision
-async function detectDocumentType(
+// Auto-   document type using Gemini Vision
+async function   DocumentType(
   imageData: string, 
   mimeType: string,
   textContent?: string
-): Promise<DetectionResult> {
-  log("Auto-detecting document type...");
+): Promise<  ionResult> {
+  log("Auto-  ing document type...");
   
   const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
   
@@ -105,14 +105,14 @@ Only respond with valid JSON, no additional text.`;
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      log("Document type detected:", parsed.type);
+      log("Document type   ed:", parsed.type);
       log("Confidence:", parsed.confidence);
-      return parsed as DetectionResult;
+      return parsed as   ionResult;
     }
     
-    throw new Error("Could not parse detection response");
+    throw new Error("Could not parse   ion response");
   } catch (error) {
-    logError("Document detection failed:", error);
+    logError("Document   ion failed:", error);
     return {
       type: "unknown",
       confidence: 0,
@@ -122,17 +122,17 @@ Only respond with valid JSON, no additional text.`;
 }
 
 // Generate a markdown response for unknown documents
-function generateUnknownResponse(detection: DetectionResult): string {
+function generateUnknownResponse(  ion:   ionResult): string {
   return `## 🔍 Document Analysis
 
 I've analyzed your document but couldn't classify it into one of my specialized categories.
 
-**What I found:** ${detection.reasoning}
+**What I found:** ${  ion.reasoning}
 
 ### What I Can Help With:
 - 🛂 **Visa & Travel Documents** - Passport analysis, visa requirements, immigration papers
-- 📝 **Contracts & Legal Documents** - Agreement review, red flag detection, terms analysis
-- 🚨 **Scam Detection** - Phishing emails, fake invoices, fraudulent messages
+- 📝 **Contracts & Legal Documents** - Agreement review, red flag   ion, terms analysis
+- 🚨 **Scam   ion** - Phishing emails, fake invoices, fraudulent messages
 - ✈️ **Trip Planning** - Multi-city itineraries, travel logistics
 
 **Try uploading:**
@@ -183,27 +183,27 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now();
 
-    // Step 1: Auto-detect document type
-    const detection = await detectDocumentType(imageData, mimeType, textContent);
-    log(`Detection complete: ${detection.type} (${(detection.confidence * 100).toFixed(0)}% confidence)`);
+    // Step 1: Auto-   document type
+    const   ion = await   DocumentType(imageData, mimeType, textContent);
+    log(`  ion complete: ${  ion.type} (${(  ion.confidence * 100).toFixed(0)}% confidence)`);
 
     // Handle unknown documents
-    if (detection.type === "unknown" || detection.confidence < 0.3) {
-      const unknownResponse = generateUnknownResponse(detection);
+    if (  ion.type === "unknown" ||   ion.confidence < 0.3) {
+      const unknownResponse = generateUnknownResponse(  ion);
       return NextResponse.json({
         success: true,
-        detectedType: "unknown",
-        detection,
+          edType: "unknown",
+          ion,
         response: unknownResponse,
         voiceResponse: includeVoice ? optimizeForVoice(unknownResponse) : undefined,
         timing: { totalMs: Date.now() - startTime },
       });
     }
 
-    // Step 2: Route to appropriate agent based on detected type
+    // Step 2: Route to appropriate agent based on   ed type
     let analysisResult: BusinessGuardianInput["analysisResults"];
     
-    switch (detection.type) {
+    switch (  ion.type) {
       case "visa": {
         log("Routing to VisaLens agent...");
         const visaInput: VisaLensInput = {
@@ -212,10 +212,10 @@ export async function POST(request: NextRequest) {
             mimeType,
             filename: "uploaded_document",
           }] : [],
-          destinationCountry: detection.extractedData?.destinationCountry as string || "Unknown",
-          passportCountry: detection.extractedData?.passportCountry as string || "Unknown",
-          travelDate: detection.extractedData?.travelDate as string,
-          tripPurpose: (detection.extractedData?.tripPurpose as "business" | "tourism" | "work" | "transit" | "study" | "medical") || "tourism",
+          destinationCountry:   ion.extractedData?.destinationCountry as string || "Unknown",
+          passportCountry:   ion.extractedData?.passportCountry as string || "Unknown",
+          travelDate:   ion.extractedData?.travelDate as string,
+          tripPurpose: (  ion.extractedData?.tripPurpose as "business" | "tourism" | "work" | "transit" | "study" | "medical") || "tourism",
         };
         
         const visaResult = await analyzeVisaDocuments(visaInput);
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
       case "legal": {
         log("Routing to LegalLens agent...");
         const legalInput: LegalLensInput = {
-          documentText: detection.extractedText || textContent,
+          documentText:   ion.extractedText || textContent,
           documentContent: imageData,
           documentMimeType: mimeType,
           documentFilename: "uploaded_contract",
@@ -241,19 +241,19 @@ export async function POST(request: NextRequest) {
       case "scam": {
         log("Routing to ScamShield agent...");
         const scamInput: ScamShieldInput = {
-          content: detection.extractedText || textContent || "",
-          contentType: detection.extractedData?.isInvoice ? "invoice" : "email",
-          emailText: !detection.extractedData?.isInvoice ? (detection.extractedText || textContent) : undefined,
-          emailContent: !detection.extractedData?.isInvoice ? imageData : undefined,
-          emailMimeType: !detection.extractedData?.isInvoice ? mimeType : undefined,
-          invoiceText: detection.extractedData?.isInvoice ? (detection.extractedText || textContent) : undefined,
-          invoiceContent: detection.extractedData?.isInvoice ? imageData : undefined,
-          invoiceMimeType: detection.extractedData?.isInvoice ? mimeType : undefined,
-          claimedSender: detection.extractedData?.sender as string,
-          claimedAmount: detection.extractedData?.amount as number,
+          content:   ion.extractedText || textContent || "",
+          contentType:   ion.extractedData?.isInvoice ? "invoice" : "email",
+          emailText: !  ion.extractedData?.isInvoice ? (  ion.extractedText || textContent) : undefined,
+          emailContent: !  ion.extractedData?.isInvoice ? imageData : undefined,
+          emailMimeType: !  ion.extractedData?.isInvoice ? mimeType : undefined,
+          invoiceText:   ion.extractedData?.isInvoice ? (  ion.extractedText || textContent) : undefined,
+          invoiceContent:   ion.extractedData?.isInvoice ? imageData : undefined,
+          invoiceMimeType:   ion.extractedData?.isInvoice ? mimeType : undefined,
+          claimedSender:   ion.extractedData?.sender as string,
+          claimedAmount:   ion.extractedData?.amount as number,
         };
         
-        const scamResult = await detectScam(scamInput);
+        const scamResult = await   Scam(scamInput);
         analysisResult = { scam: scamResult };
         break;
       }
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
       case "trip": {
         log("Routing to TripGuard agent...");
         // Map extracted stops to include required 'purpose' field
-        const extractedStops = (detection.extractedData?.stops as Array<{
+        const extractedStops = (  ion.extractedData?.stops as Array<{
           country: string;
           city?: string;
           duration?: number;
@@ -269,14 +269,14 @@ export async function POST(request: NextRequest) {
         }>) || [];
         
         const tripInput: TripGuardInput = {
-          passportCountry: detection.extractedData?.passportCountry as string || "Unknown",
+          passportCountry:   ion.extractedData?.passportCountry as string || "Unknown",
           stops: extractedStops.map(stop => ({
             country: stop.country,
             city: stop.city,
             duration: stop.duration,
             purpose: (stop.purpose as "tourism" | "business" | "transit" | "work" | "study" | "medical") || "tourism",
           })),
-          startDate: detection.extractedData?.startDate as string,
+          startDate:   ion.extractedData?.startDate as string,
         };
         
         const tripResult = await planTrip(tripInput);
@@ -285,13 +285,13 @@ export async function POST(request: NextRequest) {
       }
       
       default:
-        throw new Error(`Unexpected document type: ${detection.type}`);
+        throw new Error(`Unexpected document type: ${  ion.type}`);
     }
 
     // Step 3: Synthesize with Business Guardian
     log("Synthesizing response with Business Guardian...");
     const guardianInput: BusinessGuardianInput = {
-      analysisType: detection.type,
+      analysisType:   ion.type,
       analysisResults: analysisResult,
       outputFormat: "full",
     };
@@ -310,8 +310,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      detectedType: detection.type,
-      detection,
+        edType:   ion.type,
+        ion,
       rawAnalysis: analysisResult,
       synthesizedResponse,
       response: synthesizedResponse.response,

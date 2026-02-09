@@ -1,10 +1,10 @@
 // ============================================
 // ORCHESTRATOR: Multi-Agent Pipeline
 // Chains all 5 agents with DB persistence
-// Now with AUTO MODE DETECTION
+// Now with AUTO MODE   ION
 // ============================================
 
-import { extractConversation, detectAnalysisMode } from './extractor';
+import { extractConversation,   AnalysisMode } from './extractor';
 import { classifyTactics } from './classifier';
 import { analyzesPsychology } from './psychologist';
 import { generateDefenses } from './defender';
@@ -16,7 +16,7 @@ import {
 } from '@/types/agents';
 import {
   saveAnalysisSession,
-  saveDetectedTactic,
+  save  edTactic,
   saveHealthScore,
 } from '@/lib/supabase';
 
@@ -24,7 +24,7 @@ export interface OrchestratorOptions {
   saveToDatabase?: boolean;
   userId?: string;
   sessionId?: string;
-  forceMode?: AnalysisMode; // Optional: override auto-detection
+  forceMode?: AnalysisMode; // Optional: override auto-  ion
 }
 
 export async function runAnalysisPipeline(
@@ -40,7 +40,7 @@ export async function runAnalysisPipeline(
 
   const startTime = Date.now();
 
-  // ===== AUTO MODE DETECTION =====
+  // ===== AUTO MODE   ION =====
   let mode: AnalysisMode;
   let modeConfidence = 1.0;
   let modeReasoning = '';
@@ -50,16 +50,16 @@ export async function runAnalysisPipeline(
     modeReasoning = 'Mode manually specified';
     console.log(`[Orchestrator] Using forced mode: ${mode}`);
   } else {
-    console.log('[Orchestrator] Auto-detecting analysis mode...');
-    const detection = await detectAnalysisMode(input);
-    mode = detection.detectedMode;
-    modeConfidence = detection.confidence;
-    modeReasoning = detection.reasoning;
-    console.log(`[Orchestrator] Detected mode: ${mode} (confidence: ${(modeConfidence * 100).toFixed(0)}%)`);
+    console.log('[Orchestrator] Auto-  ing analysis mode...');
+    const   ion = await   AnalysisMode(input);
+    mode =   ion.  edMode;
+    modeConfidence =   ion.confidence;
+    modeReasoning =   ion.reasoning;
+    console.log(`[Orchestrator]   ed mode: ${mode} (confidence: ${(modeConfidence * 100).toFixed(0)}%)`);
     console.log(`[Orchestrator] Reasoning: ${modeReasoning}`);
   }
 
-  // Update input with detected mode
+  // Update input with   ed mode
   input.mode = mode;
 
   console.log(`[Orchestrator] Starting ${mode} analysis pipeline...`);
@@ -71,9 +71,9 @@ export async function runAnalysisPipeline(
     console.log(`[Agent 1] Extracted ${extraction.messages.length} messages`);
 
     // ===== AGENT 2: CLASSIFIER =====
-    console.log('[Agent 2] Classifier: Detecting patterns...');
+    console.log('[Agent 2] Classifier:   ing patterns...');
     const classification = await classifyTactics(extraction, mode);
-    console.log(`[Agent 2] Found ${classification.tacticsDetected.length} tactics`);
+    console.log(`[Agent 2] Found ${classification.tactics  ed.length} tactics`);
 
     // ===== AGENT 3: PSYCHOLOGIST =====
     console.log('[Agent 3] Psychologist: Analyzing psychology...');
@@ -106,11 +106,11 @@ export async function runAnalysisPipeline(
         processingTimeMs: processingTime,
         agentsUsed: ['extractor', 'classifier', 'psychologist', 'defender', 'guardian'],
         modelVersion: 'gemini-3-flash-preview',
-        modeDetection: {
-          detectedMode: mode,
+        mode  ion: {
+            edMode: mode,
           confidence: modeConfidence,
           reasoning: modeReasoning,
-          wasAutoDetected: !forceMode,
+          wasAuto  ed: !forceMode,
         },
       },
     };
@@ -131,8 +131,8 @@ export async function runAnalysisPipeline(
           relationship_type: extraction.relationshipType,
           threat_level: classification.overallThreatLevel,
           health_score: psychology.relationshipHealthScore,
-          tactics_count: classification.tacticsDetected.length,
-          primary_tactic: classification.tacticsDetected[0]?.tactic,
+          tactics_count: classification.tactics  ed.length,
+          primary_tactic: classification.tactics  ed[0]?.tactic,
           extracted_data: extraction,
           classification_data: classification,
           psychology_data: psychology,
@@ -142,9 +142,9 @@ export async function runAnalysisPipeline(
           processing_time_ms: processingTime,
         });
 
-        // Save detected tactics
-        for (const tactic of classification.tacticsDetected) {
-          await saveDetectedTactic({
+        // Save   ed tactics
+        for (const tactic of classification.tactics  ed) {
+          await save  edTactic({
             session_id: savedSession.id,
             tactic_key: tactic.tactic,
             tactic_name: tactic.tacticName,
@@ -163,7 +163,7 @@ export async function runAnalysisPipeline(
           score: psychology.relationshipHealthScore,
           threat_level: classification.overallThreatLevel,
           mode,
-          tactics_detected: classification.tacticsDetected.map(t => t.tactic),
+          tactics_  ed: classification.tactics  ed.map(t => t.tactic),
         });
 
         console.log(`[Database] Session saved: ${savedSession.id}`);
@@ -192,7 +192,7 @@ export async function quickAnalysis(
   tacticsCount: number;
   summary: string;
   voiceScript: string;
-  detectedMode: AnalysisMode;
+    edMode: AnalysisMode;
 }> {
   const result = await runAnalysisPipeline(
     { conversationText: text },
@@ -201,15 +201,15 @@ export async function quickAnalysis(
 
   return {
     threatLevel: result.classification.overallThreatLevel,
-    tacticsCount: result.classification.tacticsDetected.length,
+    tacticsCount: result.classification.tactics  ed.length,
     summary: result.guardian.summaryHeadline,
     voiceScript: result.guardian.voiceScript,
-    detectedMode: result.mode,
+      edMode: result.mode,
   };
 }
 
 // Export individual agents for direct use
-export { extractConversation, detectAnalysisMode } from './extractor';
+export { extractConversation,   AnalysisMode } from './extractor';
 export { classifyTactics } from './classifier';
 export { analyzesPsychology } from './psychologist';
 export { generateDefenses } from './defender';

@@ -233,7 +233,7 @@ function generateFallbackResponse(
   const typeLabels: Record<BusinessAnalysisType, string> = {
     visa: "Visa Document Analysis",
     legal: "Contract Analysis",
-    scam: "Scam Detection",
+    scam: "Scam   ion",
     trip: "Trip Planning",
   };
 

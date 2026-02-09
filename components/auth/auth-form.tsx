@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github, Command } from "lucide-react";
+import { Github } from "lucide-react";
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(false);
@@ -66,7 +67,7 @@ export function AuthForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/chat`,
         },
       });
       if (error) throw error;
@@ -77,15 +78,21 @@ export function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen min-h-[100dvh] flex bg-zinc-950">
       {/* Left Side - Dark with testimonial */}
       <div className="hidden lg:flex lg:w-1/2 bg-zinc-950 flex-col justify-between p-8 relative">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 flex items-center justify-center">
-            <Command className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden">
+            <Image
+              src="/avatar.png"
+              alt="Cleir"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="text-white font-medium">Gaslighter Detect</span>
+          <span className="text-white font-medium">Cleir</span>
         </div>
         
         {/* Testimonial */}
@@ -98,13 +105,21 @@ export function AuthForm() {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="w-full lg:w-1/2 bg-zinc-950 lg:bg-zinc-900 flex flex-col">
+      <div className="w-full lg:w-1/2 bg-zinc-950 flex flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)]">
         {/* Top bar with Login link */}
         <div className="flex justify-between items-center p-6">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2">
-            <Command className="w-5 h-5 text-white" />
-            <span className="text-white font-medium">Gaslighter Detect</span>
+            <div className="w-6 h-6 rounded-lg overflow-hidden">
+              <Image
+                src="/avatar.png"
+                alt="Cleir"
+                width={24}
+                height={24}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-white font-medium">Cleir</span>
           </div>
           <div className="hidden lg:block" />
           <button

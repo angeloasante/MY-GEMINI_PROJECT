@@ -1,5 +1,5 @@
 -- ============================================
--- GASLIGHTER DETECT - DATABASE SCHEMA
+-- Cleir    - DATABASE SCHEMA
 -- Supabase PostgreSQL
 -- ============================================
 
@@ -65,10 +65,10 @@ CREATE INDEX idx_sessions_threat_level ON analysis_sessions(threat_level);
 CREATE INDEX idx_sessions_mode ON analysis_sessions(mode);
 
 -- ============================================
--- DETECTED TACTICS
+--   ED TACTICS
 -- Individual tactics found in each analysis
 -- ============================================
-CREATE TABLE IF NOT EXISTS detected_tactics (
+CREATE TABLE IF NOT EXISTS   ed_tactics (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id UUID REFERENCES analysis_sessions(id) ON DELETE CASCADE,
   
@@ -85,9 +85,9 @@ CREATE TABLE IF NOT EXISTS detected_tactics (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_tactics_session ON detected_tactics(session_id);
-CREATE INDEX idx_tactics_key ON detected_tactics(tactic_key);
-CREATE INDEX idx_tactics_severity ON detected_tactics(severity);
+CREATE INDEX idx_tactics_session ON   ed_tactics(session_id);
+CREATE INDEX idx_tactics_key ON   ed_tactics(tactic_key);
+CREATE INDEX idx_tactics_severity ON   ed_tactics(severity);
 
 -- ============================================
 -- CONVERSATION MESSAGES
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS conversation_messages (
   sender TEXT NOT NULL CHECK (sender IN ('user', 'other')),
   content TEXT NOT NULL,
   message_index INTEGER NOT NULL,
-  timestamp_original TEXT, -- Original timestamp if detected
+  timestamp_original TEXT, -- Original timestamp if   ed
   
   -- Flags
   is_flagged BOOLEAN DEFAULT FALSE,
@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS scam_reports (
   
   scam_type TEXT NOT NULL, -- phishing, romance, tech_support, etc.
   sender_identifier TEXT, -- phone, email (hashed for privacy)
-  urls_detected TEXT[],
+  urls_  ed TEXT[],
   
   -- Aggregated for community protection
   is_verified BOOLEAN DEFAULT FALSE,
@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS self_analysis_patterns (
   healthier_alternatives TEXT[],
   root_cause_explanation TEXT,
   
-  detected_at TIMESTAMPTZ DEFAULT NOW()
+    ed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_self_device ON self_analysis_patterns(device_id);
@@ -236,7 +236,7 @@ CREATE INDEX idx_self_pattern ON self_analysis_patterns(pattern_type);
 
 -- Enable RLS
 ALTER TABLE analysis_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE detected_tactics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE   ed_tactics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversation_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE evidence_vault ENABLE ROW LEVEL SECURITY;
 ALTER TABLE health_score_history ENABLE ROW LEVEL SECURITY;
@@ -247,7 +247,7 @@ ALTER TABLE self_analysis_patterns ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Service role has full access to sessions" ON analysis_sessions
   FOR ALL USING (true);
 
-CREATE POLICY "Service role has full access to tactics" ON detected_tactics
+CREATE POLICY "Service role has full access to tactics" ON   ed_tactics
   FOR ALL USING (true);
 
 CREATE POLICY "Service role has full access to messages" ON conversation_messages
@@ -308,7 +308,7 @@ BEGIN
     dt.tactic_name,
     COUNT(*) as occurrence_count,
     ROUND(AVG(dt.confidence), 2) as avg_confidence
-  FROM detected_tactics dt
+  FROM   ed_tactics dt
   JOIN analysis_sessions s ON dt.session_id = s.id
   WHERE s.device_id = p_device_id
   GROUP BY dt.tactic_key, dt.tactic_name

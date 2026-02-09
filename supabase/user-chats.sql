@@ -1,5 +1,5 @@
 -- ============================================
--- GASLIGHTER DETECT - USER CHATS SCHEMA
+-- Cleir    - USER CHATS SCHEMA
 -- Add to existing Supabase database
 -- ============================================
 

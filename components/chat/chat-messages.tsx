@@ -25,7 +25,7 @@ export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "
 
   if (messages.length === 0 && !isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 pt-16 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 pt-16 text-center bg-[#121212]">
         <div className="w-24 h-24 mb-6">
           <SpeakingAvatar
             audioBase64={null}
@@ -36,7 +36,7 @@ export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "
         </div>
         <h2 className="text-2xl font-bold text-white mb-3">
           {mode === "personal" 
-            ? "Welcome to Gaslighter Detect" 
+            ? "Welcome to Cleir Detect" 
             : "Business Assistant"
           }
         </h2>
@@ -92,7 +92,7 @@ export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto bg-[#121212]">
       <div className="p-6 pt-14 space-y-2">
         {messages.map((message, index) => {
           const isLastAssistantMessage = 
@@ -133,13 +133,13 @@ export function ChatMessages({ messages, isLoading, isSpeaking = false, mode = "
             <div className="bg-[#2a2a2a] rounded-2xl px-4 py-3">
               <div className="flex gap-1.5">
                 <span className={`w-2 h-2 rounded-full animate-bounce [animation-delay:-0.3s] ${
-                  mode === "personal" ? "bg-teal-400" : "bg-blue-400"
+                  mode === "personal" ? "bg-rose-400" : "bg-orange-400"
                 }`} />
                 <span className={`w-2 h-2 rounded-full animate-bounce [animation-delay:-0.15s] ${
-                  mode === "personal" ? "bg-teal-400" : "bg-blue-400"
+                  mode === "personal" ? "bg-rose-400" : "bg-orange-400"
                 }`} />
                 <span className={`w-2 h-2 rounded-full animate-bounce ${
-                  mode === "personal" ? "bg-teal-400" : "bg-blue-400"
+                  mode === "personal" ? "bg-rose-400" : "bg-orange-400"
                 }`} />
               </div>
             </div>

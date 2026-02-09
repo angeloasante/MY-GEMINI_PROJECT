@@ -1,8 +1,8 @@
-# 🛡️ Gaslighter Detect
+# 🛡️ Cleir   
 
-**AI-Powered Manipulation Detection for Conversations**
+**AI-Powered Manipulation   ion for Conversations**
 
-> Detect manipulation tactics, identify scams, and improve your communication patterns with a 5-agent AI pipeline powered by Gemini 3 Flash Preview.
+>    manipulation tactics, identify scams, and improve your communication patterns with a 5-agent AI pipeline powered by Gemini 3 Flash Preview.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![Gemini](https://img.shields.io/badge/Gemini-3--Flash--Preview-blue)](https://ai.google.dev/)
@@ -18,7 +18,7 @@
 
 | Mode | Description |
 |------|-------------|
-| 💔 **Relationship** | Detect manipulation tactics like gaslighting, DARVO, love bombing |
+| 💔 **Relationship** |    manipulation tactics like gaslighting, DARVO, love bombing |
 | 🛡️ **Scam Shield** | Identify phishing, fraud, romance scams, and suspicious links |
 | 🪞 **Self-Analysis** | Reflect on your own communication patterns (over-apologizing, fawning) |
 
@@ -47,11 +47,11 @@
 
 ## 💼 Business Mode
 
-Gaslighter Detect includes a powerful **Business Assistant** mode for professional use cases:
+Cleir    includes a powerful **Business Assistant** mode for professional use cases:
 
 ### Core Features
-- **Mode Toggle** — Switch between Personal (manipulation detection) and Business modes
-- **Auto-Detect Chat** — AI automatically routes queries to specialized agents
+- **Mode Toggle** — Switch between Personal (manipulation   ion) and Business modes
+- **Auto-   Chat** — AI automatically routes queries to specialized agents
 - **Voice Responses** — TTS support with animated avatar
 - **Separate Chat History** — Personal and Business chats stored separately
 
@@ -61,12 +61,12 @@ Gaslighter Detect includes a powerful **Business Assistant** mode for profession
 |-------|---------|------------------|
 | 🌍 **VisaLens** | Visa requirements & immigration | "Do I need a visa for...", "Travel documents for..." |
 | ⚖️ **LegalLens** | Legal document analysis | "Review this contract...", "Legal implications of..." |
-| 🛡️ **ScamShield** | Business fraud detection | "Is this offer legit...", "Suspicious business email..." |
+| 🛡️ **ScamShield** | Business fraud   ion | "Is this offer legit...", "Suspicious business email..." |
 | ✈️ **TripGuard** | Travel safety & itinerary planning | "Plan a trip to...", "Is it safe to travel to..." |
 
 ### API Endpoints
 ```
-POST /api/business-chat    # Main business chat (auto-detects intent)
+POST /api/business-chat    # Main business chat (auto-  s intent)
 POST /api/business/visa    # Direct VisaLens queries
 POST /api/business/legal   # Direct LegalLens queries  
 POST /api/business/scam    # Direct ScamShield queries
@@ -139,8 +139,8 @@ Full user authentication system:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gaslighter-detect
-cd gaslighter-detect
+git clone https://github.com/yourusername/Cleir-  
+cd Cleir-  
 
 # Install dependencies
 npm install
@@ -193,7 +193,7 @@ Open [http://localhost:3000](http://localhost:3000)
 1. **Select Mode** — Choose Relationship, Scam Shield, or Self-Analysis
 2. **Upload Screenshot** — Click the attachment button
 3. **Wait for Analysis** — ~4-5 seconds for full pipeline
-4. **Review Results** — Tactics detected, psychological analysis, response scripts
+4. **Review Results** — Tactics   ed, psychological analysis, response scripts
 5. **Listen (optional)** — Enable voice for audio breakdown
 
 ### Understanding Results
@@ -212,7 +212,7 @@ Open [http://localhost:3000](http://localhost:3000)
 - **80-100**: Healthy relationship dynamics
 - **60-79**: Some concerning patterns
 - **40-59**: Unhealthy dynamics present
-- **20-39**: Dangerous patterns detected
+- **20-39**: Dangerous patterns   ed
 - **0-19**: Emergency - seek help immediately
 
 ---
@@ -223,7 +223,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           GASLIGHTER DETECT                                  │
+│                           Cleir                                     │
 │                     Dual-Mode AI Assistant Platform                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
@@ -250,10 +250,10 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🔮 Personal Mode Architecture (Manipulation Detection)
+## 🔮 Personal Mode Architecture (Manipulation   ion)
 
 ### Overview
-Personal Mode provides AI-powered manipulation detection across three specialized analysis modes, using a sophisticated 5-agent pipeline.
+Personal Mode provides AI-powered manipulation   ion across three specialized analysis modes, using a sophisticated 5-agent pipeline.
 
 ### Analysis Modes
 
@@ -264,8 +264,8 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │                                                                              │
 │  💔 RELATIONSHIP MODE        🛡️ SCAM SHIELD MODE      🪞 SELF-ANALYSIS MODE  │
 │  ─────────────────────       ────────────────────      ────────────────────  │
-│  • Gaslighting detection     • Phishing detection      • Communication audit │
-│  • DARVO pattern matching    • Romance scam alerts     • Fawning detection   │
+│  • Gaslighting   ion     • Phishing   ion      • Communication audit │
+│  • DARVO pattern matching    • Romance scam alerts     • Fawning   ion   │
 │  • Love bombing analysis     • Fraud identification    • Over-apologizing    │
 │  • Emotional manipulation    • Suspicious link scan    • Boundary issues     │
 │  • Isolation tactics         • Investment scams        • People-pleasing     │
@@ -303,7 +303,7 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  • Confidence scoring (0-100)                                   │       │
 │   │  • Category classification                                      │       │
 │   │  • Evidence extraction with quotes                              │       │
-│   │  Output: JSON array of detected patterns                        │       │
+│   │  Output: JSON array of   ed patterns                        │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
 │        │                                                                    │
 │        ▼                                                                    │
@@ -312,7 +312,7 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 │   │  ───────────────────────────────────────────────────────────────│       │
 │   │  • Psychological impact assessment                              │       │
 │   │  • Relationship dynamics analysis                               │       │
-│   │  • Power imbalance detection                                    │       │
+│   │  • Power imbalance   ion                                    │       │
 │   │  • Victim validation and support                                │       │
 │   │  Output: Empathetic analysis with context                       │       │
 │   └─────────────────────────────────────────────────────────────────┘       │
@@ -352,7 +352,7 @@ Personal Mode provides AI-powered manipulation detection across three specialize
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      PATTERN DETECTION CATEGORIES                            │
+│                      PATTERN   ION CATEGORIES                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  GASLIGHTING                    EMOTIONAL MANIPULATION                       │
@@ -638,7 +638,7 @@ POST /api/tts
 ## 📁 Complete Project Structure
 
 ```
-gaslighter-detect/
+Cleir-  /
 ├── app/
 │   ├── api/
 │   │   ├── analyze/            # 5-agent analysis pipeline
@@ -694,7 +694,7 @@ gaslighter-detect/
 ├── lib/
 │   ├── agents/                 # 5-Agent AI System
 │   │   ├── extractor.ts        # Agent 1: Vision OCR
-│   │   ├── classifier.ts       # Agent 2: Pattern detection
+│   │   ├── classifier.ts       # Agent 2: Pattern   ion
 │   │   ├── psychologist.ts     # Agent 3: Analysis
 │   │   ├── defender.ts         # Agent 4: Response scripts
 │   │   ├── guardian.ts         # Agent 5: Synthesis

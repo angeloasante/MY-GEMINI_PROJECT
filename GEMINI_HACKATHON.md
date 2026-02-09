@@ -1,4 +1,4 @@
-# 🛡️ Gaslighter Detect v3.0
+# 🛡️ Cleir    v3.0
 
 ## Multi-Agent AI System Powered by Gemini 3 Flash Preview
 
@@ -32,13 +32,13 @@
 
 ---
 
-## 💡 Our Solution: Gaslighter Detect
+## 💡 Our Solution: Cleir   
 
-**Gaslighter Detect** is an AI-powered conversation analyst with **three powerful modes**:
+**Cleir   ** is an AI-powered conversation analyst with **three powerful modes**:
 
 | Mode | Description | Use Case |
 |------|-------------|----------|
-| 💔 **Relationship Analysis** | Detect manipulation tactics in conversations | Toxic relationships, emotional abuse |
+| 💔 **Relationship Analysis** |    manipulation tactics in conversations | Toxic relationships, emotional abuse |
 | 🛡️ **Scam Shield** | Identify phishing, fraud, and scam attempts | Suspicious messages, too-good-to-be-true offers |
 | 🪞 **Self-Analysis** | Reflect on your own communication patterns | Personal growth, breaking unhealthy patterns |
 
@@ -66,7 +66,7 @@ Simply screenshot a conversation, select your mode, and our **5-agent AI pipelin
 │         Gemini 3 Flash Preview Vision                            │
 │         • Extracts text from screenshot                          │
 │         • Identifies speakers & platform                         │
-│         • Detects URLs, phone numbers, emails (for scam mode)    │
+│         •   s URLs, phone numbers, emails (for scam mode)    │
 │         ⏱️ ~800ms                                                │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
@@ -197,8 +197,8 @@ analysis_sessions (
   created_at TIMESTAMPTZ
 )
 
--- Detected Tactics (for analytics)
-detected_tactics (
+--   ed Tactics (for analytics)
+  ed_tactics (
   id UUID PRIMARY KEY,
   session_id UUID REFERENCES analysis_sessions,
   tactic_key TEXT,
@@ -218,7 +218,7 @@ health_score_history (
   score INTEGER,
   threat_level TEXT,
   mode TEXT,
-  tactics_detected TEXT[],
+  tactics_  ed TEXT[],
   recorded_at TIMESTAMPTZ
 )
 
@@ -243,7 +243,7 @@ evidence_vault (
 | **Framework** | Next.js 16.1.6, React 19, TypeScript 5.x |
 | **AI Engine** | Gemini 3 Flash Preview (`gemini-3-flash-preview`) |
 | **Personal Mode** | 5-Agent Pipeline (Extractor, Classifier, Psychologist, Defender, Guardian) |
-| **Business Mode** | Auto-detect chat with 4 specialized agents (VisaLens, LegalLens, ScamShield, TripGuard) |
+| **Business Mode** | Auto-   chat with 4 specialized agents (VisaLens, LegalLens, ScamShield, TripGuard) |
 | **Itinerary Planning** | AI-generated travel itineraries with Google Maps integration |
 | **Maps & Places** | Google Maps API + Google Places API (geocoding, place details, photos) |
 | **Voice** | ElevenLabs TTS (eleven_turbo_v2_5, speed 1.2) |
@@ -259,12 +259,12 @@ evidence_vault (
 ## 📁 Project Structure
 
 ```
-gaslighter-detect/
+Cleir-  /
 ├── app/
 │   ├── api/
 │   │   ├── analyze/route.ts       # Multi-agent analysis endpoint
 │   │   ├── chat/route.ts          # Personal chat
-│   │   ├── business-chat/route.ts # Business chat with itinerary detection
+│   │   ├── business-chat/route.ts # Business chat with itinerary   ion
 │   │   ├── business/              # Business mode specialized agents
 │   │   │   ├── visa/route.ts      # VisaLens agent
 │   │   │   ├── legal/route.ts     # LegalLens agent
@@ -332,7 +332,7 @@ Analyze a conversation screenshot with the multi-agent pipeline.
     "mode": "relationship",
     "extraction": { /* parsed conversation */ },
     "classification": {
-      "tacticsDetected": [ /* array of tactics */ ],
+      "tactics  ed": [ /* array of tactics */ ],
       "overallThreatLevel": "red",
       "primaryTactic": "gaslighting"
     },
@@ -346,7 +346,7 @@ Analyze a conversation screenshot with the multi-agent pipeline.
       "safetyResources": [ /* hotlines */ ]
     },
     "guardian": {
-      "summaryHeadline": "🚩 3 SERIOUS RED FLAGS DETECTED",
+      "summaryHeadline": "🚩 3 SERIOUS RED FLAGS   ED",
       "fullMarkdownResponse": "...",
       "voiceScript": "..."
     }
@@ -379,7 +379,7 @@ Generate exportable report.
 ## �️ Business Mode & AI Itinerary
 
 ### Overview
-Business Mode provides professional assistance with auto-detection of query intent. When travel planning is detected, it generates comprehensive itineraries with Google Maps integration.
+Business Mode provides professional assistance with auto-  ion of query intent. When travel planning is   ed, it generates comprehensive itineraries with Google Maps integration.
 
 ### Business Chat Flow
 ```
@@ -391,7 +391,7 @@ Business Mode provides professional assistance with auto-detection of query inte
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │             GEMINI 3 FLASH PREVIEW                               │
-│         • Detects itinerary request                              │
+│         •   s itinerary request                              │
 │         • Generates JSON with days, activities, locations        │
 │         ⏱️ ~2-3 seconds                                          │
 └─────────────────────┬───────────────────────────────────────────┘
@@ -479,7 +479,7 @@ Business Mode provides professional assistance with auto-detection of query inte
 ## 🎯 Impact & Future Vision
 
 ### Current Impact:
-- Instant manipulation detection (vs months of confusion)
+- Instant manipulation   ion (vs months of confusion)
 - Accessible alternative to expensive therapy
 - Scam protection for vulnerable populations
 - Self-improvement tools for personal growth
@@ -498,8 +498,8 @@ Business Mode provides professional assistance with auto-detection of query inte
 
 ```bash
 # Clone & Install
-git clone https://github.com/yourusername/gaslighter-detect
-cd gaslighter-detect
+git clone https://github.com/yourusername/Cleir-  
+cd Cleir-  
 npm install
 
 # Configure Environment
@@ -520,7 +520,7 @@ npm run dev
 1. **Multimodal Vision**: Understands screenshot layouts, chat bubble colors, platform UI with enhanced accuracy
 2. **Advanced Reasoning**: Superior psychological analysis with nuance and context awareness
 3. **JSON Mode**: Guaranteed structured output for pipeline data flow
-4. **Thinking Capability**: Built-in reasoning for complex manipulation pattern detection
+4. **Thinking Capability**: Built-in reasoning for complex manipulation pattern   ion
 5. **Speed**: 5-agent pipeline completes in ~3-4 seconds (faster than 2.0)
 6. **1M Token Context**: Handles extremely long conversation histories
 7. **Cost-Effective**: Optimized for consumer applications at scale
@@ -547,4 +547,4 @@ This tool is here to support you, not judge you. Your feelings are valid. Your e
 
 *Built with 💔→💪 by developers who've been there*
 
-🛡️ **Gaslighter Detect** — Your AI guardian against manipulation
+🛡️ **Cleir   ** — Your AI guardian against manipulation

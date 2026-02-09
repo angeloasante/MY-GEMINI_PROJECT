@@ -1,5 +1,5 @@
 -- ============================================
--- GASLIGHTER DETECT - BUSINESS MODE SCHEMA
+-- Cleir    - BUSINESS MODE SCHEMA
 -- Supabase PostgreSQL
 -- ============================================
 
@@ -156,7 +156,7 @@ ON CONFLICT (flag_key) DO NOTHING;
 
 -- ============================================
 -- B2B SCAM REPORTS
--- Business fraud detection results
+-- Business fraud   ion results
 -- ============================================
 CREATE TABLE IF NOT EXISTS scam_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS scam_reports (
   scam_likelihood TEXT NOT NULL CHECK (scam_likelihood IN ('safe', 'suspicious', 'likely_scam')),
   confidence_score DECIMAL CHECK (confidence_score >= 0 AND confidence_score <= 1),
   
-  -- Red flags detected
+  -- Red flags   ed
   red_flags JSONB DEFAULT '[]'::jsonb, -- [{flag, evidence, severity}]
   urgency_tactics TEXT[],
   suspicious_payment_methods TEXT[],

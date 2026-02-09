@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { 
   analyzeVisaDocuments, 
   analyzeContract, 
-  detectScam, 
+    Scam, 
   planTrip,
   synthesizeBusinessResponse,
   optimizeForVoice
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
           );
         }
         
-        const scamResult = await detectScam(scamInput);
+        const scamResult = await   Scam(scamInput);
         analysisResult = {
           scam: scamResult,
         };
@@ -221,13 +221,13 @@ export async function GET() {
       },
       legal: {
         name: "LegalLens",
-        description: "Contract analysis and red flag detection",
+        description: "Contract analysis and red flag   ion",
         requiredFields: ["documentText OR documentContent"],
         optionalFields: ["documentType", "focusAreas"],
       },
       scam: {
         name: "B2B ScamShield",
-        description: "Business fraud detection for emails and invoices",
+        description: "Business fraud   ion for emails and invoices",
         requiredFields: ["emailText OR invoiceText OR emailContent OR invoiceContent"],
         optionalFields: ["contentType", "claimedSender", "claimedAmount"],
       },

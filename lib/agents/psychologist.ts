@@ -48,7 +48,7 @@ export async function analyzesPsychology(
   const prompt = getPromptForMode(mode);
 
   // Build detailed tactic context
-  const tacticDetails = classification.tacticsDetected.map(t => {
+  const tacticDetails = classification.tactics  ed.map(t => {
     const tacticDef = taxonomy[t.tactic];
     return `- ${t.tacticName} (${t.severity} severity, ${(t.confidence * 100).toFixed(0)}% confidence)
     Evidence: "${t.evidenceQuotes.join('", "')}"
@@ -70,8 +70,8 @@ Relationship Type: ${extraction.relationshipType}
 CONVERSATION:
 ${conversationText}
 
-DETECTED TACTICS (from Classifier Agent):
-${tacticDetails || 'No tactics detected'}
+  ED TACTICS (from Classifier Agent):
+${tacticDetails || 'No tactics   ed'}
 
 Overall Threat Level: ${classification.overallThreatLevel}
 Pattern Type: ${classification.patternType}

@@ -53,7 +53,7 @@ export function SpeakingAvatar({
       {/* Glow effect when speaking */}
       {isSpeaking && (
         <div 
-          className="absolute inset-0 rounded-full bg-gradient-to-r from-teal-400/30 to-cyan-400/30 blur-md transition-all duration-75"
+          className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-400/30 to-orange-400/30 blur-md transition-all duration-75"
           style={{ transform: `scale(${1.2 + intensity * 0.3})` }}
         />
       )}
@@ -75,7 +75,7 @@ export function SpeakingAvatar({
       {isSpeaking && (
         <>
           <div 
-            className="absolute inset-0 rounded-full border border-teal-400/40 animate-ping"
+            className="absolute inset-0 rounded-full border border-rose-400/40 animate-ping"
             style={{ animationDuration: '1.5s' }}
           />
         </>

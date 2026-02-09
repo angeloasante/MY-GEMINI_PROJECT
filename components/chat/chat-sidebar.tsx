@@ -1,7 +1,7 @@
 "use client";
 
-import { PanelLeftClose, PanelLeft, MessageSquarePlus, Trash2, MessagesSquare, Volume2 } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { PanelLeftClose, PanelLeft, MessageSquarePlus, Trash2, MessagesSquare, Volume2, X } from "lucide-react";
+import { useRef, useState, useEffect, useCallback, TouchEvent } from "react";
 
 export interface ChatHistoryItem {
   id: string;
@@ -29,6 +29,7 @@ interface ChatSidebarProps {
   onDeleteChat: (id: string) => void;
   audioData?: AudioData | null;
   onSpeakingChange?: (speaking: boolean) => void;
+  isMobile?: boolean;
 }
 
 export function ChatSidebar({
@@ -41,11 +42,17 @@ export function ChatSidebar({
   onDeleteChat,
   audioData,
   onSpeakingChange,
+  isMobile = false,
 }: ChatSidebarProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [intensity, setIntensity] = useState(0);
   const animationRef = useRef<number | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchCurrentX = useRef<number>(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
 
   // Notify parent when speaking state changes
   useEffect(() => {
@@ -94,6 +101,34 @@ export function ChatSidebar({
     };
   }, [audioData]);
 
+  // Handle swipe to close on mobile
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (!isMobile) return;
+    touchStartX.current = e.touches[0].clientX;
+    touchCurrentX.current = e.touches[0].clientX;
+    setIsDragging(true);
+  }, [isMobile]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isMobile || !isDragging) return;
+    touchCurrentX.current = e.touches[0].clientX;
+    const diff = touchCurrentX.current - touchStartX.current;
+    // Only allow dragging to the left (negative) to close
+    if (diff < 0) {
+      setDragOffset(diff);
+    }
+  }, [isMobile, isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isMobile || !isDragging) return;
+    setIsDragging(false);
+    // If dragged more than 100px to the left, close the sidebar
+    if (dragOffset < -100) {
+      onToggleCollapse();
+    }
+    setDragOffset(0);
+  }, [isMobile, isDragging, dragOffset, onToggleCollapse]);
+
   const handleAvatarClick = () => {
     if (!audioRef.current) return;
     if (isSpeaking) {
@@ -103,9 +138,30 @@ export function ChatSidebar({
       audioRef.current.play().catch(() => {});
     }
   };
-  if (isCollapsed) {
+
+  const handleSelectChatMobile = (id: string) => {
+    onSelectChat(id);
+    if (isMobile) {
+      onToggleCollapse();
+    }
+  };
+
+  const handleNewChatMobile = () => {
+    onNewChat();
+    if (isMobile) {
+      onToggleCollapse();
+    }
+  };
+
+  // On mobile when collapsed, render nothing (the button is in the main area)
+  if (isMobile && isCollapsed) {
+    return null;
+  }
+
+  // Desktop collapsed view
+  if (!isMobile && isCollapsed) {
     return (
-      <aside className="w-16 bg-[#1a1a1a] flex flex-col h-screen border-r border-white/10 items-center py-4">
+      <aside className="w-16 bg-[#1a1a1a] flex flex-col h-screen min-h-[100dvh] border-r border-white/10 items-center py-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button
           onClick={onToggleCollapse}
           className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors mb-4"
@@ -126,8 +182,116 @@ export function ChatSidebar({
     );
   }
 
+  // Mobile overlay sidebar
+  if (isMobile && !isCollapsed) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+          onClick={onToggleCollapse}
+        />
+        {/* Sidebar */}
+        <aside 
+          ref={sidebarRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="fixed left-0 top-0 w-[85vw] max-w-[320px] bg-[#1a1a1a] flex flex-col border-r border-white/10 z-50 shadow-2xl transition-transform duration-200 overflow-hidden"
+          style={{ 
+            transform: isDragging ? `translateX(${dragOffset}px)` : 'translateX(0)',
+            height: '100dvh',
+          }}
+        >
+          {/* Header with Logo and Close Button */}
+          <div className="flex-shrink-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/avatar.png" alt="Logo" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-lg font-bold text-white tracking-tight">
+                Cleir<span className="text-rose-400">.</span>
+              </span>
+            </div>
+            <button
+              onClick={onToggleCollapse}
+              className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+
+          {/* New Chat Button */}
+          <div className="flex-shrink-0 px-4 mb-2">
+            <button
+              onClick={handleNewChatMobile}
+              className="w-full flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-medium text-sm hover:opacity-90 transition-opacity"
+            >
+              <MessageSquarePlus className="w-4 h-4" />
+              New Chat
+            </button>
+          </div>
+
+          {/* Chat History - scrollable area */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-2">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mb-2">
+              Recent Chats
+            </div>
+            <div className="space-y-1">
+              {chatHistory.length === 0 ? (
+                <div className="text-sm text-gray-500 text-center py-8">
+                  No conversations yet
+                </div>
+              ) : (
+                chatHistory.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={`group flex items-center gap-2 p-3 rounded-xl cursor-pointer transition-all ${
+                      activeChatId === chat.id
+                        ? "bg-white/10 text-white"
+                        : "hover:bg-white/5 text-gray-400"
+                    }`}
+                    onClick={() => handleSelectChatMobile(chat.id)}
+                  >
+                    <MessagesSquare className="w-4 h-4 shrink-0" />
+                    <span className="flex-1 truncate text-sm">{chat.title}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteChat(chat.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-lg hover:bg-white/10 flex items-center justify-center transition-opacity"
+                    >
+                      <Trash2 className="w-3 h-3 text-gray-400" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Footer - always visible */}
+          <div className="flex-shrink-0 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] border-t border-white/10 bg-[#1a1a1a]">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-yellow-600 p-0.5 flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/avatar.png" alt="Guardian" className="w-full h-full object-cover rounded-full" />
+              </div>
+              <div>
+                <div className="text-white font-semibold">Guardian AI</div>
+                <div className="text-xs text-gray-400">Ready to help</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </>
+    );
+  }
+
+  // Desktop expanded view
   return (
-    <aside className="w-80 bg-[#1a1a1a] flex flex-col h-screen border-r border-white/10">
+    <aside className="w-80 bg-[#1a1a1a] flex flex-col h-screen min-h-[100dvh] border-r border-white/10">
       {/* Header with Logo and Collapse Button */}
       <div className="p-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -136,7 +300,7 @@ export function ChatSidebar({
             <img src="/avatar.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <span className="text-xl font-bold text-white tracking-tight">
-            gaslighter<span className="text-teal-400">.detect</span>
+            Cleir<span className="text-rose-400">.</span>
           </span>
         </div>
         <button
@@ -151,7 +315,7 @@ export function ChatSidebar({
       <div className="px-4 mb-2">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium text-sm hover:opacity-90 transition-opacity"
+          className="w-full flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-medium text-sm hover:opacity-90 transition-opacity"
         >
           <MessageSquarePlus className="w-4 h-4" />
           New Chat

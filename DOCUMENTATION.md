@@ -1,6 +1,6 @@
-# 🛡️ Gaslighter Detect - Technical Documentation
+# 🛡️ Cleir    - Technical Documentation
 
-> **AI-Powered Manipulation Detection System**  
+> **AI-Powered Manipulation   ion System**  
 > Built for the Gemini 3 Hackathon | February 2026
 
 ---
@@ -10,7 +10,7 @@
 1. [Project Overview](#project-overview)
 2. [Architecture](#architecture)
 3. [Multi-Agent Pipeline](#multi-agent-pipeline)
-4. [Auto Mode Detection](#auto-mode-detection)
+4. [Auto Mode   ion](#auto-mode-  ion)
 5. [Analysis Modes & Taxonomies](#analysis-modes--taxonomies)
 6. [API Endpoints](#api-endpoints)
 7. [Database Schema](#database-schema)
@@ -25,14 +25,14 @@
 
 ## 🎯 Project Overview
 
-**Gaslighter Detect** is an AI-powered application that analyzes conversations to detect manipulation, gaslighting, scams, and toxic communication patterns. Users can paste text conversations or upload screenshots, and the system automatically determines what type of analysis is needed.
+**Cleir   ** is an AI-powered application that analyzes conversations to    manipulation, gaslighting, scams, and toxic communication patterns. Users can paste text conversations or upload screenshots, and the system automatically determines what type of analysis is needed.
 
 ### Key Features
 
 - 🤖 **5-Agent AI Pipeline** - Specialized agents work together for comprehensive analysis
-- 🔍 **Auto Mode Detection** - AI automatically determines if content is a scam, relationship manipulation, or self-analysis
+- 🔍 **Auto Mode   ion** - AI automatically determines if content is a scam, relationship manipulation, or self-analysis
 - 🗣️ **Voice Responses** - ElevenLabs TTS provides spoken analysis with animated avatar
-- 📊 **35+ Detection Patterns** - Comprehensive taxonomies covering relationship manipulation, scams, and self-reflection
+- 📊 **35+   ion Patterns** - Comprehensive taxonomies covering relationship manipulation, scams, and self-reflection
 - 💾 **Persistent History** - Supabase database stores all analyses for tracking patterns over time
 - 📸 **Screenshot Analysis** - Upload images of conversations for visual extraction
 
@@ -62,7 +62,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                   MULTI-AGENT ORCHESTRATOR                       │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │        AUTO MODE DETECTION (Gemini 3 Flash Preview)      │   │
+│  │        AUTO MODE   ION (Gemini 3 Flash Preview)      │   │
 │  │         Determines: relationship | scam | self           │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │         │                                                        │
@@ -85,7 +85,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                      SUPABASE DATABASE                           │
 │  ┌────────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
-│  │ analysis_sessions│ │ detected_tactics │ │ health_score_history│ │
+│  │ analysis_sessions│ │   ed_tactics │ │ health_score_history│ │
 │  └────────────────┘  └─────────────────┘  └──────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -105,7 +105,7 @@ The system uses **5 specialized AI agents**, each powered by **Gemini 3 Flash Pr
 - Parses raw text conversations
 - Uses Gemini's vision capabilities to read screenshot images
 - Identifies participants, platform, relationship type
-- Extracts URLs, phone numbers, emails (for scam detection)
+- Extracts URLs, phone numbers, emails (for scam   ion)
 - Determines conversation context
 
 **Output:**
@@ -124,14 +124,14 @@ The system uses **5 specialized AI agents**, each powered by **Gemini 3 Flash Pr
 
 ---
 
-### Agent 2: The Classifier ("The Detective")
+### Agent 2: The Classifier ("The   ive")
 **File:** `lib/agents/classifier.ts`
 
 **Purpose:** Identifies manipulation tactics and assigns threat levels.
 
 **Capabilities:**
 - Scans for 35+ manipulation patterns from the taxonomy
-- Calculates confidence scores for each detection
+- Calculates confidence scores for each   ion
 - Assigns severity levels (none → low → medium → high → critical)
 - Extracts evidence quotes with message indices
 - Determines overall threat level
@@ -139,7 +139,7 @@ The system uses **5 specialized AI agents**, each powered by **Gemini 3 Flash Pr
 **Output:**
 ```typescript
 {
-  tacticsDetected: TacticDetection[],
+  tactics  ed: Tactic  ion[],
   overallThreatLevel: "safe" | "mild" | "moderate" | "severe" | "critical",
   primaryManipulator: string,
   manipulationTimeline: TimelineEvent[],
@@ -243,13 +243,13 @@ The system uses **5 specialized AI agents**, each powered by **Gemini 3 Flash Pr
 
 ---
 
-## 🎯 Auto Mode Detection
+## 🎯 Auto Mode   ion
 
 The system **automatically determines** the appropriate analysis mode without user input.
 
-**File:** `lib/agents/extractor.ts` - `detectAnalysisMode()`
+**File:** `lib/agents/extractor.ts` - `  AnalysisMode()`
 
-### Detection Logic
+###   ion Logic
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -280,16 +280,16 @@ The system **automatically determines** the appropriate analysis mode without us
                               └─────────────┘ └──────────────┘
 ```
 
-### API Response Includes Detection Metadata
+### API Response Includes   ion Metadata
 
 ```json
 {
   "metadata": {
-    "modeDetection": {
-      "detectedMode": "scam",
+    "mode  ion": {
+      "  edMode": "scam",
       "confidence": 0.95,
-      "reasoning": "Detected urgency tactics and request for gift cards",
-      "wasAutoDetected": true
+      "reasoning": "  ed urgency tactics and request for gift cards",
+      "wasAuto  ed": true
     }
   }
 }
@@ -322,7 +322,7 @@ The system **automatically determines** the appropriate analysis mode without us
 
 ---
 
-### Mode 2: Scam Detection (12 Tactics)
+### Mode 2: Scam   ion (12 Tactics)
 **File:** `lib/taxonomy.ts` - `SCAM_TAXONOMY`
 
 | Tactic | Severity | Description |
@@ -361,7 +361,7 @@ The system **automatically determines** the appropriate analysis mode without us
 ## 🌐 API Endpoints
 
 ### POST `/api/analyze`
-**Main analysis endpoint with auto-detection**
+**Main analysis endpoint with auto-  ion**
 
 **Request:**
 ```json
@@ -369,7 +369,7 @@ The system **automatically determines** the appropriate analysis mode without us
   "conversationText": "string (optional)",
   "imageData": "base64 string (optional)",
   "mimeType": "image/jpeg (optional)",
-  "mode": "relationship|scam|self_analysis (optional - auto-detected if omitted)",
+  "mode": "relationship|scam|self_analysis (optional - auto-  ed if omitted)",
   "userId": "string (optional)",
   "saveToDatabase": true
 }
@@ -381,7 +381,7 @@ The system **automatically determines** the appropriate analysis mode without us
   "success": true,
   "data": {
     "sessionId": "uuid",
-    "mode": "detected mode",
+    "mode": "  ed mode",
     "extraction": { ... },
     "classification": { ... },
     "psychology": { ... },
@@ -389,11 +389,11 @@ The system **automatically determines** the appropriate analysis mode without us
     "guardian": { ... },
     "metadata": {
       "processingTimeMs": 2500,
-      "modeDetection": {
-        "detectedMode": "scam",
+      "mode  ion": {
+        "  edMode": "scam",
         "confidence": 0.92,
         "reasoning": "...",
-        "wasAutoDetected": true
+        "wasAuto  ed": true
       }
     }
   }
@@ -485,9 +485,9 @@ CREATE TABLE analysis_sessions (
 );
 ```
 
-#### `detected_tactics`
+#### `  ed_tactics`
 ```sql
-CREATE TABLE detected_tactics (
+CREATE TABLE   ed_tactics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id UUID REFERENCES analysis_sessions(id),
   tactic_key TEXT NOT NULL,
@@ -510,7 +510,7 @@ CREATE TABLE health_score_history (
   score INTEGER NOT NULL,
   threat_level threat_level,
   mode analysis_mode,
-  tactics_detected TEXT[],
+  tactics_  ed TEXT[],
   recorded_at TIMESTAMPTZ DEFAULT now()
 );
 ```
@@ -615,7 +615,7 @@ DIASPORA_AI_VISA_API_KEY=your_diaspora_visa_key
 ## 📁 Project Structure
 
 ```
-gaslighter-detect/
+Cleir-  /
 ├── app/
 │   ├── api/
 │   │   ├── analyze/route.ts      # Main analysis endpoint
@@ -634,7 +634,7 @@ gaslighter-detect/
 ├── lib/
 │   ├── agents/
 │   │   ├── prompts.ts            # All agent prompts
-│   │   ├── extractor.ts          # Agent 1 + mode detection
+│   │   ├── extractor.ts          # Agent 1 + mode   ion
 │   │   ├── classifier.ts         # Agent 2
 │   │   ├── psychologist.ts       # Agent 3
 │   │   ├── defender.ts           # Agent 4
@@ -658,7 +658,7 @@ gaslighter-detect/
 | Feature | Status |
 |---------|--------|
 | Multi-agent pipeline | ✅ Complete |
-| Auto mode detection | ✅ Complete |
+| Auto mode   ion | ✅ Complete |
 | Relationship taxonomy (15) | ✅ Complete |
 | Scam taxonomy (12) | ✅ Complete |
 | Self-analysis taxonomy (8) | ✅ Complete |
@@ -679,7 +679,7 @@ gaslighter-detect/
 ## 💼 Business Mode
 
 ### Overview
-The application now supports a **Business Mode** alongside the Personal (manipulation detection) mode. Users can switch between modes using a toggle in the top-right corner.
+The application now supports a **Business Mode** alongside the Personal (manipulation   ion) mode. Users can switch between modes using a toggle in the top-right corner.
 
 ### Features
 
@@ -698,14 +698,14 @@ The application now supports a **Business Mode** alongside the Personal (manipul
 |-------|----------|---------|
 | **VisaLens** | `/api/business/visa` | Visa requirements and immigration guidance |
 | **LegalLens** | `/api/business/legal` | Legal document analysis and advice |
-| **ScamShield** | `/api/business/scam` | Business fraud and scam detection |
+| **ScamShield** | `/api/business/scam` | Business fraud and scam   ion |
 | **TripGuard** | `/api/business/trip` | Travel safety and itinerary planning |
 
 ### Business Mode API Endpoint
 
 **`POST /api/business-chat`**
 
-The business chat endpoint automatically detects itinerary requests and generates comprehensive travel plans.
+The business chat endpoint automatically   s itinerary requests and generates comprehensive travel plans.
 
 ```typescript
 // Request
@@ -761,14 +761,14 @@ The business chat endpoint automatically detects itinerary requests and generate
 ### Overview
 Business Mode includes AI-powered itinerary generation with full Google Maps integration. When users request trip planning, the system:
 
-1. **Detects** itinerary requests via Gemini 3 Flash
+1. **  s** itinerary requests via Gemini 3 Flash
 2. **Generates** structured JSON itinerary with activities
 3. **Enriches** each activity with Google Places API data
 4. **Displays** interactive map with markers and routes
 
-### Itinerary Detection Triggers
+### Itinerary   ion Triggers
 
-The AI detects these phrases as itinerary requests:
+The AI   s these phrases as itinerary requests:
 - "plan a trip to..."
 - "create an itinerary for..."
 - "I want to visit..."

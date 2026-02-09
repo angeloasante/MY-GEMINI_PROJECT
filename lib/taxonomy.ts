@@ -1,5 +1,5 @@
 // ============================================
-// GASLIGHTER DETECT - COMPLETE TAXONOMY
+// Cleir    - COMPLETE TAXONOMY
 // Relationship + Scam + Self-Analysis Patterns
 // ============================================
 
@@ -299,7 +299,7 @@ export const RELATIONSHIP_TAXONOMY: TaxonomyMap = {
 };
 
 // ============================================
-// SCAM DETECTION TAXONOMY
+// SCAM   ION TAXONOMY
 // ============================================
 export const SCAM_TAXONOMY: TaxonomyMap = {
   urgency_pressure: {
@@ -441,7 +441,7 @@ export const SCAM_TAXONOMY: TaxonomyMap = {
       "Download this software",
       "Your device is compromised",
       "Call this number immediately",
-      "Security alert detected",
+      "Security alert   ed",
       "Allow me to fix your computer",
     ],
     severity: "critical",
@@ -503,7 +503,7 @@ export const SCAM_TAXONOMY: TaxonomyMap = {
     description: "Phishing via text message",
     markers: [
       "Package delivery failed",
-      "Unusual activity detected",
+      "Unusual activity   ed",
       "Verify your identity via text",
       "Reply YES to confirm",
       "Click link to track",

@@ -65,7 +65,7 @@ export async function synthesizeResponse(
   const prompt = getPromptForMode(mode);
 
   // Build comprehensive context for Guardian
-  const tacticsFound = classification.tacticsDetected
+  const tacticsFound = classification.tactics  ed
     .map(t => `• ${t.tacticName} (${t.severity}): "${t.evidenceQuotes[0] || 'N/A'}"`)
     .join('\n');
 
@@ -95,8 +95,8 @@ MODE: ${mode.toUpperCase()}
 CONVERSATION:
 ${conversationText}
 
-TACTICS DETECTED (${classification.tacticsDetected.length}):
-${tacticsFound || 'None detected'}
+TACTICS   ED (${classification.tactics  ed.length}):
+${tacticsFound || 'None   ed'}
 
 THREAT LEVEL: ${classification.overallThreatLevel.toUpperCase()}
 HEALTH SCORE: ${psychology.relationshipHealthScore}/100
@@ -176,13 +176,13 @@ Voice script MUST be under 150 words and natural for text-to-speech.`;
 
 function generateHeadline(classification: ClassificationResult, mode: AnalysisMode): string {
   const level = classification.overallThreatLevel;
-  const count = classification.tacticsDetected.length;
+  const count = classification.tactics  ed.length;
 
   if (mode === 'scam') {
-    if (level === 'red') return '🚨 HIGH RISK SCAM DETECTED';
-    if (level === 'orange') return '⚠️ SUSPICIOUS ACTIVITY DETECTED';
+    if (level === 'red') return '🚨 HIGH RISK SCAM   ED';
+    if (level === 'orange') return '⚠️ SUSPICIOUS ACTIVITY   ED';
     if (level === 'yellow') return '⚡ POSSIBLE SCAM INDICATORS';
-    return '✅ NO SCAM DETECTED';
+    return '✅ NO SCAM   ED';
   }
 
   if (mode === 'self_analysis') {
@@ -192,10 +192,10 @@ function generateHeadline(classification: ClassificationResult, mode: AnalysisMo
   }
 
   // Relationship mode
-  if (level === 'red') return `🚩 ${count} SERIOUS RED FLAGS DETECTED`;
+  if (level === 'red') return `🚩 ${count} SERIOUS RED FLAGS   ED`;
   if (level === 'orange') return `⚠️ ${count} MANIPULATION TACTICS FOUND`;
   if (level === 'yellow') return `⚡ ${count} CONCERNING PATTERNS`;
-  return '💚 No manipulation detected!';
+  return '💚 No manipulation   ed!';
 }
 
 function generateFallbackVoice(
@@ -204,7 +204,7 @@ function generateFallbackVoice(
   mode: AnalysisMode
 ): string {
   const level = classification.overallThreatLevel;
-  const count = classification.tacticsDetected.length;
+  const count = classification.tactics  ed.length;
 
   if (mode === 'scam') {
     if (level === 'red') {
@@ -235,9 +235,9 @@ function buildFallbackMarkdown(
   
   let md = `# ${emoji} Analysis Complete\n\n`;
 
-  if (classification.tacticsDetected.length > 0) {
-    md += `## 🚩 Red Flags Detected\n\n`;
-    classification.tacticsDetected.forEach(t => {
+  if (classification.tactics  ed.length > 0) {
+    md += `## 🚩 Red Flags   ed\n\n`;
+    classification.tactics  ed.forEach(t => {
       md += `- **${t.tacticName}** (${t.severity}): "${t.evidenceQuotes[0] || 'Evidence found'}"\n`;
     });
     md += '\n';
