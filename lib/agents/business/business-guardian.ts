@@ -127,25 +127,46 @@ export async function synthesizeBusinessResponse(
 ): Promise<BusinessGuardianOutput> {
   console.log(`[BusinessGuardian] Synthesizing ${input.analysisType} analysis...`);
 
+  // Extract the actual result - handle both analysisResult and analysisResults patterns
+  const getResult = <T>(type: keyof NonNullable<BusinessGuardianInput["analysisResults"]>): T => {
+    // First try direct analysisResult
+    if (input.analysisResult) {
+      return input.analysisResult as T;
+    }
+    // Then try nested analysisResults
+    if (input.analysisResults && input.analysisResults[type]) {
+      return input.analysisResults[type] as T;
+    }
+    throw new Error(`No analysis result found for type: ${type}`);
+  };
+
   // Prepare context based on analysis type
   let context: string;
   let diasporaLink: string | undefined;
 
   switch (input.analysisType) {
-    case "visa":
-      context = prepareVisaContext(input.analysisResult as VisaLensOutput);
-      diasporaLink = (input.analysisResult as VisaLensOutput).diasporaLink;
+    case "visa": {
+      const visaResult = getResult<VisaLensOutput>("visa");
+      context = prepareVisaContext(visaResult);
+      diasporaLink = visaResult.diasporaLink;
       break;
-    case "legal":
-      context = prepareLegalContext(input.analysisResult as LegalLensOutput);
+    }
+    case "legal": {
+      const legalResult = getResult<LegalLensOutput>("legal");
+      context = prepareLegalContext(legalResult);
       break;
-    case "scam":
-      context = prepareScamContext(input.analysisResult as ScamShieldOutput);
+    }
+    case "scam": {
+      const scamResult = getResult<ScamShieldOutput>("scam");
+      context = prepareScamContext(scamResult);
       break;
-    case "trip":
-      context = prepareTripContext(input.analysisResult as TripGuardOutput);
-      diasporaLink = (input.analysisResult as TripGuardOutput).diasporaMultiCityLink;
+    }
+    case "trip": {
+      const tripResult = getResult<TripGuardOutput>("trip");
+      context = prepareTripContext(tripResult);
+      diasporaLink = tripResult.diasporaMultiCityLink;
       break;
+    }
     default:
       throw new Error(`Unknown analysis type: ${input.analysisType}`);
   }

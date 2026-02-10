@@ -40,24 +40,26 @@ export async function runAnalysisPipeline(
 
   const startTime = Date.now();
 
-  // ===== AUTO MODE DETECTION =====
+  // ===== PHASE 1: MODE DETECTION + EXTRACTION (PARALLEL) =====
   let mode: AnalysisMode;
   let modeConfidence = 1.0;
   let modeReasoning = '';
+  
+  console.log('[Orchestrator] Starting parallel Phase 1: Mode detection + Extraction...');
+  
+  // Run mode detection and extraction in parallel
+  const [modeResult, extraction] = await Promise.all([
+    forceMode 
+      ? Promise.resolve({ detectedMode: forceMode, confidence: 1.0, reasoning: 'Mode manually specified' })
+      : detectAnalysisMode(input),
+    extractConversation(input),
+  ]);
 
-  if (forceMode) {
-    mode = forceMode;
-    modeReasoning = 'Mode manually specified';
-    console.log(`[Orchestrator] Using forced mode: ${mode}`);
-  } else {
-    console.log('[Orchestrator] Auto-detecting analysis mode...');
-    const detection = await detectAnalysisMode(input);
-    mode = detection.detectedMode;
-    modeConfidence = detection.confidence;
-    modeReasoning = detection.reasoning;
-    console.log(`[Orchestrator] Detected mode: ${mode} (confidence: ${(modeConfidence * 100).toFixed(0)}%)`);
-    console.log(`[Orchestrator] Reasoning: ${modeReasoning}`);
-  }
+  mode = modeResult.detectedMode;
+  modeConfidence = modeResult.confidence;
+  modeReasoning = modeResult.reasoning;
+  
+  console.log(`[Phase 1 Complete] Mode: ${mode} (${(modeConfidence * 100).toFixed(0)}%), Extracted ${extraction.messages.length} messages`);
 
   // Update input with detected mode
   input.mode = mode;
@@ -65,27 +67,23 @@ export async function runAnalysisPipeline(
   console.log(`[Orchestrator] Starting ${mode} analysis pipeline...`);
 
   try {
-    // ===== AGENT 1: EXTRACTOR =====
-    console.log('[Agent 1] Extractor: Processing input...');
-    const extraction = await extractConversation(input);
-    console.log(`[Agent 1] Extracted ${extraction.messages.length} messages`);
-
-    // ===== AGENT 2: CLASSIFIER =====
+    // ===== PHASE 2: CLASSIFIER =====
     console.log('[Agent 2] Classifier: Detecting patterns...');
     const classification = await classifyTactics(extraction, mode);
     console.log(`[Agent 2] Found ${classification.tacticsDetected.length} tactics`);
 
-    // ===== AGENT 3: PSYCHOLOGIST =====
-    console.log('[Agent 3] Psychologist: Analyzing psychology...');
+    // ===== PHASE 3: PSYCHOLOGIST + DEFENDER PREP (PARALLEL) =====
+    // Psychologist can run, and we can prepare defender context
+    console.log('[Phase 3] Running Psychologist...');
     const psychology = await analyzesPsychology(extraction, classification, mode);
     console.log(`[Agent 3] Health score: ${psychology.relationshipHealthScore}/100`);
 
-    // ===== AGENT 4: DEFENDER =====
+    // ===== PHASE 4: DEFENDER =====
     console.log('[Agent 4] Defender: Generating responses...');
     const defenses = await generateDefenses(extraction, classification, psychology, mode);
     console.log(`[Agent 4] Generated ${defenses.recommendedResponses.length} responses`);
 
-    // ===== AGENT 5: GUARDIAN =====
+    // ===== PHASE 5: GUARDIAN =====
     console.log('[Agent 5] Guardian: Synthesizing response...');
     const guardian = await synthesizeResponse(extraction, classification, psychology, defenses, mode);
     console.log('[Agent 5] Response ready');
